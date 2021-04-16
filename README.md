@@ -4,6 +4,10 @@
 
 
 
+示例: [SamplePlugin.py](./SamplePlugin.py)
+
+
+
 ## API 列表
 
 `get_server_version()`
