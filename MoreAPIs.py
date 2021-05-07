@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import re
 from MoreAPIs.StatusPing import StatusPing
 from json import load
 from psutil import Process
@@ -23,12 +24,13 @@ from parse import parse
 from mcdreforged.api.all import *
 
 _plugin_id = "more_apis"
-_plugin_version = "0.0.1"
+_plugin_version = "0.0.2"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
     "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
     "server_crashed": PluginEvent(_plugin_id + ".server_crashed"),
+    "saved_game": PluginEvent(_plugin_id+".saved_game")
 }
 with open("plugins/MoreAPIs/death_message.json", "r", encoding="utf-8") as f:
     _death_messages: dict = load(f)
@@ -73,11 +75,20 @@ def on_info(server: ServerInterface, info: Info):
             (adv_parsed["player"], adv_parsed["advancement"]),
         )
     # death_message event
-    for death_msg in _death_messages["vanilla"]:
-        parsed = parse(death_msg, info.content)
-        if parsed["player"] and parsed["killer"] is not None:
-            params = (info.content, parsed["player"], parsed["killer"])
-            server.dispatch_event(_events["death_message"], params)
+    for i in _death_messages["msgs"]:
+        if re.fullmatch(i,info.content):
+            server.dispatch_event(
+                _events["death_message"],
+                (i,)
+            )
+            break
+    
+    # save_game event
+    if info.content=="Saved the game":
+        server.dispatch_event(
+            _events['saved_game']
+        )
+
 
     # ========== API ==========
     # Get the server version
@@ -100,6 +111,11 @@ def get_server_version(server: ServerInterface):
         raise RuntimeError("Cannot invoke get_server_version before server startup")
     return _mc_version
 
+# send server list ping
 def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5):
     response=StatusPing(host,port,timeout)
     return response.get_status()
+
+# execute at
+def execute_atas(server:ServerInterface,player:str,command:str):
+    server.execute(f"execute as {player} at {player} {command}")
