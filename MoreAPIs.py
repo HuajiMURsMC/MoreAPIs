@@ -83,7 +83,7 @@ def on_info(server: ServerInterface, info: Info):
             )
             break
     
-    # save_game event
+    # saved_game event
     if info.content=="Saved the game":
         server.dispatch_event(
             _events['saved_game']
@@ -117,5 +117,5 @@ def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5):
     return response.get_status()
 
 # execute at
-def execute_atas(server:ServerInterface,player:str,command:str):
+def execute_at(server:ServerInterface,player:str,command:str):
     server.execute(f"execute as {player} at {player} {command}")

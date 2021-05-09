@@ -4,10 +4,6 @@
 
 
 
-示例: [SamplePlugin.py](./SamplePlugin.py)
-
-
-
 ## API 列表
 
 `get_server_version()`
@@ -46,6 +42,22 @@
 
 
 
+`execute_at(server:ServerInterface,player:str,command:str)`
+
+在某个玩家执行某条指令
+
+Bukkit指令可能不行
+
+参数:
+
+`server`
+
+`player`: 玩家名称
+
+`command`: 要执行的指令
+
+
+
 ---
 
 ## 事件列表
@@ -54,7 +66,7 @@
 
 玩家死亡显示死亡信息后触发(仅对原版死亡消息进行支持)
 
-参数: `server`, `death_message`
+参数: `ServerInterface`, `death_message`
 
 
 
@@ -62,7 +74,7 @@
 
 玩家获得了一个进度后触发
 
-参数: `server`, `advancement`
+参数: `ServerInterface`, `advancement`
 
 
 
@@ -70,4 +82,12 @@
 
 服务器崩溃后触发，判断崩溃方式与`CrashRestart`插件相同
 
-参数: `server`, `crash_report_path`
+参数: `ServerInterface`, `crash_report_path`
+
+
+
+`more_apis.saved_game`
+
+当服务端输出 `Saved the game` 后触发
+
+参数: `ServerInterface`
