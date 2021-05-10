@@ -6,13 +6,13 @@
 
 ## API 列表
 
-`get_server_version()`
+#### `get_server_version()`
 
 获取服务端的版本
 
 
 
-`kill_server(server:ServerInterface)`
+#### `kill_server(server:ServerInterface)`
 
 强制终止服务端
 
@@ -20,7 +20,7 @@
 
 
 
-`send_server_list_ping(host: str, port, timeout: int)`
+#### `send_server_list_ping(host: str, port, timeout: int)`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft: Java Editon 服务器
 
@@ -42,7 +42,7 @@
 
 
 
-`execute_at(server:ServerInterface,player:str,command:str)`
+#### `execute_at(server:ServerInterface,player:str,command:str)`
 
 在某个玩家执行某条指令
 
@@ -58,7 +58,7 @@ Bukkit指令可能不行
 
 
 
-`get_mcdr_config()`
+#### `get_mcdr_config()`
 
 获取MCDR的配置文件
 
@@ -68,7 +68,7 @@ Bukkit指令可能不行
 
 ## 事件列表
 
-`more_apis.death_message`
+#### `more_apis.death_message`
 
 玩家死亡显示死亡信息后触发(仅对原版死亡消息进行支持)
 
@@ -76,7 +76,7 @@ Bukkit指令可能不行
 
 
 
-`more_apis.player_made_advancement`
+#### `more_apis.player_made_advancement`
 
 玩家获得了一个进度后触发
 
@@ -84,7 +84,7 @@ Bukkit指令可能不行
 
 
 
-`more_apis.server_crashed`
+#### `more_apis.server_crashed`
 
 服务器崩溃后触发，判断崩溃方式与`CrashRestart`插件相同
 
@@ -92,7 +92,7 @@ Bukkit指令可能不行
 
 
 
-`more_apis.saved_game`
+#### `more_apis.saved_game`
 
 当服务端输出 `Saved the game` 后触发
 
