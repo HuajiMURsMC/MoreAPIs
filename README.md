@@ -58,6 +58,12 @@ Bukkit指令可能不行
 
 
 
+`get_mcdr_config()`
+
+获取MCDR的配置文件
+
+
+
 ---
 
 ## 事件列表
