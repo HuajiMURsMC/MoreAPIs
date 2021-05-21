@@ -1,6 +1,6 @@
 """
     MoreAPIs
-    Copyright (C) 2021  HuajiMUR
+    Copyright (C) 2021  Huaji_MUR233
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,11 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import re
 from MoreAPIs.StatusPing import StatusPing
-from json import load
 from psutil import Process
 from parse import parse
+from os import path
+
+import shutil
+import re
+
+from ruamel import yaml
+
 from mcdreforged.api.all import *
 
 _plugin_id = "more_apis"
@@ -32,8 +37,7 @@ _events = {
     "server_crashed": PluginEvent(_plugin_id + ".server_crashed"),
     "saved_game": PluginEvent(_plugin_id+".saved_game")
 }
-with open("plugins/MoreAPIs/death_message.json", "r", encoding="utf-8") as f:
-    _death_messages: dict = load(f)
+_death_messages={}
 
 PLUGIN_METADATA = {
     "id": _plugin_id,
@@ -42,6 +46,18 @@ PLUGIN_METADATA = {
     "author": "HuajiMUR",
     "dependencies": {"mcdreforged": ">=1.0.0"},
 }
+
+
+# Only for move death_message.yml to data folder
+def on_load(server:ServerInterface,old):
+    global _death_messages
+    if path.exists(path.join(server.get_plugin_file_path(_plugin_id),"..","MoreAPIs","death_message.yml")):
+        shutil.move(path.join(server.get_plugin_file_path(_plugin_id),"..","MoreAPIs","death_message.yml"),path.join(server.get_data_folder,"death_message.yml"))
+    if not path.exists(path.join(server.get_data_folder,"death_message.yml")):
+        server.logger.error("Can't find death_message.yml")
+        server.unload_plugin(_plugin_id)
+    with open(path.join(server.get_data_folder,"death_message.yml"),"r",encoding="utf-8") as f:
+        _death_messages=yaml.safe_load(f)
 
 
 @new_thread
@@ -119,3 +135,9 @@ def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5):
 # execute at
 def execute_at(server:ServerInterface,player:str,command:str):
     server.execute(f"execute as {player} at {player} {command}")
+
+# get uuid
+def get_uuid(player:str):
+    with open("config.yml","r",encoding="utf-8") as f:
+        mcdr_cfg=yaml.safe_load(f)
+    server_dir=mcdr_cfg['server']
