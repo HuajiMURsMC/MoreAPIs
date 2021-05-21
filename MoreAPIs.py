@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+<<<<<<< HEAD
 from MoreAPIs.StatusPing import StatusPing
 from psutil import Process
 from parse import parse
@@ -24,9 +25,18 @@ from os import path
 import shutil
 import re
 
+=======
+import re
+
+from json import load
+from psutil import Process
+from parse import parse
+>>>>>>> a0256b9a5e0eef0b925b2097001b50ab3bc05c24
 from ruamel import yaml
 
 from mcdreforged.api.all import *
+
+from MoreAPIs.StatusPing import StatusPing
 
 _plugin_id = "more_apis"
 _plugin_version = "0.0.2"
@@ -122,13 +132,13 @@ def kill_server(server: ServerInterface):
 
 
 # get server version
-def get_server_version(server: ServerInterface):
+def get_server_version(server: ServerInterface) -> str:
     if not server.is_server_startup:
         raise RuntimeError("Cannot invoke get_server_version before server startup")
     return _mc_version
 
 # send server list ping
-def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5):
+def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5) -> dict:
     response=StatusPing(host,port,timeout)
     return response.get_status()
 
@@ -136,8 +146,15 @@ def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5):
 def execute_at(server:ServerInterface,player:str,command:str):
     server.execute(f"execute as {player} at {player} {command}")
 
+<<<<<<< HEAD
 # get uuid
 def get_uuid(player:str):
     with open("config.yml","r",encoding="utf-8") as f:
         mcdr_cfg=yaml.safe_load(f)
     server_dir=mcdr_cfg['server']
+=======
+# get mcdr config
+def get_mcdr_config() -> dict:
+    with open("config.yml","r",encoding="utf-8") as f:
+        return yaml.safe_load(f)
+>>>>>>> a0256b9a5e0eef0b925b2097001b50ab3bc05c24
