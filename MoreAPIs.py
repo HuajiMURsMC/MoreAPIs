@@ -21,7 +21,6 @@ from psutil import Process
 from parse import parse
 from os import path
 
-import shutil
 import uuid
 import re
 
