@@ -44,7 +44,7 @@ _events = {
     "saved_game": PluginEvent(_plugin_id + ".saved_game"),
 }
 _death_messages = {}
-_config_path = path.join(".", "config", _plugin_id, "moreapis.yml")
+_config_path = path.join(".", "config", _plugin_id, "config.yml")
 _default_cfg = """# MoreAPIs config
 # online-mode (default: true)
 online-mode: true
@@ -72,7 +72,7 @@ def on_load(server: ServerInterface, old):
         path.join(server.get_data_folder(), "death_messages.yml"), "r", encoding="utf-8"
     ) as f:
         _death_messages = yaml.safe_load(f)
-    if not path.exists():
+    if not path.exists(_config_path):
         with open(_config_path, "w", encoding="utf-8") as f:
             f.write(_default_cfg)
 
