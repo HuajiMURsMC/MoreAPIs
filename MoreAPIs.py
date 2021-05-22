@@ -16,27 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-<<<<<<< HEAD
-from MoreAPIs.StatusPing import StatusPing
+
 from psutil import Process
 from parse import parse
 from os import path
 
 import shutil
+import uuid
 import re
 
-=======
-import re
-
-from json import load
-from psutil import Process
-from parse import parse
->>>>>>> a0256b9a5e0eef0b925b2097001b50ab3bc05c24
 from ruamel import yaml
+import requests
+
+from MoreAPIs.StatusPing import StatusPing
 
 from mcdreforged.api.all import *
 
-from MoreAPIs.StatusPing import StatusPing
 
 _plugin_id = "more_apis"
 _plugin_version = "0.0.2"
@@ -48,6 +43,11 @@ _events = {
     "saved_game": PluginEvent(_plugin_id+".saved_game")
 }
 _death_messages={}
+_config_path=path.join(".","config","moreapis.yml")
+_default_cfg="""# MoreAPIs config
+# online-mode (default: true)
+online-mode: true
+"""
 
 PLUGIN_METADATA = {
     "id": _plugin_id,
@@ -58,7 +58,6 @@ PLUGIN_METADATA = {
 }
 
 
-# Only for move death_message.yml to data folder
 def on_load(server:ServerInterface,old):
     global _death_messages
     if path.exists(path.join(server.get_plugin_file_path(_plugin_id),"..","MoreAPIs","death_message.yml")):
@@ -68,6 +67,9 @@ def on_load(server:ServerInterface,old):
         server.unload_plugin(_plugin_id)
     with open(path.join(server.get_data_folder,"death_message.yml"),"r",encoding="utf-8") as f:
         _death_messages=yaml.safe_load(f)
+    if not path.exists():
+        with open(_config_path,"w",encoding="utf-8") as f:
+            f.write(_default_cfg)
 
 
 @new_thread
@@ -130,7 +132,6 @@ def kill_server(server: ServerInterface):
     server_process = Process(server.get_server_pid)
     server_process.kill()
 
-
 # get server version
 def get_server_version(server: ServerInterface) -> str:
     if not server.is_server_startup:
@@ -146,15 +147,32 @@ def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5) -> 
 def execute_at(server:ServerInterface,player:str,command:str):
     server.execute(f"execute as {player} at {player} {command}")
 
-<<<<<<< HEAD
-# get uuid
-def get_uuid(player:str):
-    with open("config.yml","r",encoding="utf-8") as f:
-        mcdr_cfg=yaml.safe_load(f)
-    server_dir=mcdr_cfg['server']
-=======
 # get mcdr config
 def get_mcdr_config() -> dict:
     with open("config.yml","r",encoding="utf-8") as f:
         return yaml.safe_load(f)
->>>>>>> a0256b9a5e0eef0b925b2097001b50ab3bc05c24
+
+# get uuid (online mode)
+def get_online_uuid(player:str):
+    api_url="https://api.mojang.com/users/profiles/minecraft/"
+    response=requests.get(api_url+player)
+    if response!=200:
+        return None
+    else:
+        return response.json['id']
+
+# get uuid (offline mode)
+def get_offline_uuid(player:str):
+    return uuid.uuid3(player)
+
+# get uuid (auto?)
+def get_player_uuid(player:str):
+    with open(_config_path,"r",encoding="utf-8") as f:
+        cfg=yaml.safe_load(f)
+    if cfg['online-mode']:
+        player_uuid=get_online_uuid(player)
+        if player_uuid is None:
+            raise f"Can't get {player}'s uuid"
+        return player_uuid
+    return get_offline_uuid(player)
+
