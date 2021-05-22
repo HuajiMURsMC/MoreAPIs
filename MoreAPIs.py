@@ -26,6 +26,7 @@ import uuid
 import re
 
 from ruamel import yaml
+import javaproperties
 import requests
 
 from MoreAPIs.StatusPing import StatusPing
@@ -34,17 +35,17 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.0.2"
+_plugin_version = "0.0.3"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
     "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
     "server_crashed": PluginEvent(_plugin_id + ".server_crashed"),
-    "saved_game": PluginEvent(_plugin_id+".saved_game")
+    "saved_game": PluginEvent(_plugin_id + ".saved_game"),
 }
-_death_messages={}
-_config_path=path.join(".","config","moreapis.yml")
-_default_cfg="""# MoreAPIs config
+_death_messages = {}
+_config_path = path.join(".", "config", "moreapis.yml")
+_default_cfg = """# MoreAPIs config
 # online-mode (default: true)
 online-mode: true
 """
@@ -58,18 +59,48 @@ PLUGIN_METADATA = {
 }
 
 
-def on_load(server:ServerInterface,old):
+def on_load(server: ServerInterface, old):
     global _death_messages
-    if path.exists(path.join(server.get_plugin_file_path(_plugin_id),"..","MoreAPIs","death_message.yml")):
-        shutil.move(path.join(server.get_plugin_file_path(_plugin_id),"..","MoreAPIs","death_message.yml"),path.join(server.get_data_folder,"death_message.yml"))
-    if not path.exists(path.join(server.get_data_folder,"death_message.yml")):
+    if path.exists(
+        path.join(
+            server.get_plugin_file_path(_plugin_id),
+            "..",
+            "MoreAPIs",
+            "death_message.yml",
+        )
+    ):
+        shutil.move(
+            path.join(
+                server.get_plugin_file_path(_plugin_id),
+                "..",
+                "MoreAPIs",
+                "death_message.yml",
+            ),
+            path.join(server.get_data_folder, "death_message.yml"),
+        )
+    if not path.exists(path.join(server.get_data_folder, "death_message.yml")):
         server.logger.error("Can't find death_message.yml")
         server.unload_plugin(_plugin_id)
-    with open(path.join(server.get_data_folder,"death_message.yml"),"r",encoding="utf-8") as f:
-        _death_messages=yaml.safe_load(f)
+    with open(
+        path.join(server.get_data_folder, "death_message.yml"), "r", encoding="utf-8"
+    ) as f:
+        _death_messages = yaml.safe_load(f)
     if not path.exists():
-        with open(_config_path,"w",encoding="utf-8") as f:
+        with open(_config_path, "w", encoding="utf-8") as f:
             f.write(_default_cfg)
+
+
+def _get_online_uuid(player: str):
+    api_url = "https://api.mojang.com/users/profiles/minecraft/"
+    response = requests.get(api_url + player)
+    if response != 200:
+        return None
+    else:
+        return response.json["id"]
+
+
+def _get_offline_uuid(player: str):
+    return uuid.uuid3(player)
 
 
 @new_thread
@@ -104,19 +135,13 @@ def on_info(server: ServerInterface, info: Info):
         )
     # death_message event
     for i in _death_messages["msgs"]:
-        if re.fullmatch(i,info.content):
-            server.dispatch_event(
-                _events["death_message"],
-                (i,)
-            )
+        if re.fullmatch(i, info.content):
+            server.dispatch_event(_events["death_message"], (i,))
             break
-    
-    # saved_game event
-    if info.content=="Saved the game":
-        server.dispatch_event(
-            _events['saved_game']
-        )
 
+    # saved_game event
+    if info.content == "Saved the game":
+        server.dispatch_event(_events["saved_game"])
 
     # ========== API ==========
     # Get the server version
@@ -132,47 +157,63 @@ def kill_server(server: ServerInterface):
     server_process = Process(server.get_server_pid)
     server_process.kill()
 
+
 # get server version
 def get_server_version(server: ServerInterface) -> str:
     if not server.is_server_startup:
         raise RuntimeError("Cannot invoke get_server_version before server startup")
     return _mc_version
 
+
 # send server list ping
-def send_server_list_ping(host:str="localhost",port:int=25565,timeout:int=5) -> dict:
-    response=StatusPing(host,port,timeout)
+def send_server_list_ping(
+    host: str = "localhost", port: int = 25565, timeout: int = 5
+) -> dict:
+    response = StatusPing(host, port, timeout)
     return response.get_status()
 
+
 # execute at
-def execute_at(server:ServerInterface,player:str,command:str):
+def execute_at(server: ServerInterface, player: str, command: str):
     server.execute(f"execute as {player} at {player} {command}")
+
 
 # get mcdr config
 def get_mcdr_config() -> dict:
-    with open("config.yml","r",encoding="utf-8") as f:
+    with open("config.yml", "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-# get uuid (online mode)
-def get_online_uuid(player:str):
-    api_url="https://api.mojang.com/users/profiles/minecraft/"
-    response=requests.get(api_url+player)
-    if response!=200:
-        return None
+
+# get server.properties
+def get_server_properties() -> dict:
+    server_dir = get_mcdr_config()["working_directory"]
+    with open(path.join(server_dir, "server.properties"), "r", encoding="utf-8") as f:
+        return javaproperties.load(f)
+
+
+# get uuid
+def get_player_uuid(player: str, mode=None):
+    with open(_config_path, "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    if mode:
+        player_uuid = _get_online_uuid(player)
+        if player_uuid is None:
+            raise f"Can't get {player}'s uuid"
     else:
-        return response.json['id']
+        return _get_offline_uuid(player)
 
-# get uuid (offline mode)
-def get_offline_uuid(player:str):
-    return uuid.uuid3(player)
-
-# get uuid (auto?)
-def get_player_uuid(player:str):
-    with open(_config_path,"r",encoding="utf-8") as f:
-        cfg=yaml.safe_load(f)
-    if cfg['online-mode']:
-        player_uuid=get_online_uuid(player)
+    if cfg["online-mode"] is True:
+        player_uuid = _get_online_uuid(player)
         if player_uuid is None:
             raise f"Can't get {player}'s uuid"
         return player_uuid
-    return get_offline_uuid(player)
+    elif cfg["online-mode"] is False:
+        return _get_offline_uuid(player)
 
+    server_cfg = get_server_properties()
+    if server_cfg["online-mode"]:
+        player_uuid = _get_online_uuid(player)
+        if player_uuid is None:
+            raise f"Can't get {player}'s uuid"
+        return player_uuid
+    return _get_offline_uuid(player)

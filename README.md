@@ -4,6 +4,16 @@
 
 
 
+---
+
+## Python 依赖:
+
+[`javaproperties`](https://pypi.org/project/javaproperties/): 用于解析 [`server.properties`](https://minecraft.fandom.com/zh/wiki/Server.properties)
+
+
+
+---
+
 ## API 列表
 
 #### `get_server_version()`
@@ -16,15 +26,15 @@
 
 强制终止服务端
 
-参数: `server`
+参数:
 
-
+`server`: ServerInterface
 
 #### `send_server_list_ping(host: str, port, timeout: int)`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft: Java Editon 服务器
 
-引用了 [MarshalX](https://gist.github.com/MarshalX)/**[StatusPing.py](https://gist.github.com/MarshalX/40861e1d02cbbc6f23acd3eced9db1a0)**
+使用了 [MarshalX](https://gist.github.com/MarshalX)/**[StatusPing.py](https://gist.github.com/MarshalX/40861e1d02cbbc6f23acd3eced9db1a0)**
 
 参数:
 
@@ -42,15 +52,15 @@
 
 
 
-#### `execute_at(server:ServerInterface,player:str,command:str)`
+#### `execute_at(server: ServerInterface,player: str,command: str)`
 
 在某个玩家执行某条指令
 
-Bukkit指令可能不行
+Bukkit 注册指令可能不行
 
 参数:
 
-`server`
+`server`: ServerInterface
 
 `player`: 玩家名称
 
@@ -61,6 +71,20 @@ Bukkit指令可能不行
 #### `get_mcdr_config()`
 
 获取MCDR的配置文件
+
+
+
+#### `get_server_properties()`
+
+获取 Minecraft 的 `server.properties`
+
+
+
+#### `get_uuid(player: str, online: bool = None)`
+
+获取玩家的UUID
+
+`player`: 玩家名称
 
 
 
