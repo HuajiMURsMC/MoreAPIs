@@ -80,11 +80,15 @@ Bukkit 注册指令可能不行
 
 
 
-#### `get_uuid(player: str, online: bool = None)`
+#### `get_tps(secs: int = 1)`
 
-获取玩家的UUID
+获取服务器的TPS
 
-`player`: 玩家名称
+**需开启RCON来使用**
+
+参数:
+
+`secs`: 测试时间(单位: 秒)
 
 
 

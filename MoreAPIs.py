@@ -21,7 +21,7 @@ from psutil import Process
 from parse import parse
 from os import path
 
-import uuid
+import time
 import re
 
 from ruamel import yaml
@@ -43,11 +43,6 @@ _events = {
     "saved_game": PluginEvent(_plugin_id + ".saved_game"),
 }
 _death_messages = {}
-_config_path = path.join(".", "config", _plugin_id, "config.yml")
-_default_cfg = """# MoreAPIs config
-# online-mode (default: true)
-online-mode: true
-"""
 
 PLUGIN_METADATA = {
     "id": _plugin_id,
@@ -71,22 +66,6 @@ def on_load(server: ServerInterface, old):
         path.join(server.get_data_folder(), "death_messages.yml"), "r", encoding="utf-8"
     ) as f:
         _death_messages = yaml.safe_load(f)
-    if not path.exists(_config_path):
-        with open(_config_path, "w", encoding="utf-8") as f:
-            f.write(_default_cfg)
-
-
-def _get_online_uuid(player: str):
-    api_url = "https://api.mojang.com/users/profiles/minecraft/"
-    response = requests.get(api_url + player)
-    if response != 200:
-        return None
-    else:
-        return response.json["id"]
-
-
-def _get_offline_uuid(player: str):
-    return uuid.uuid3(player)
 
 
 @new_thread
@@ -110,12 +89,16 @@ def on_info(server: ServerInterface, info: Info):
         server.dispatch_event(_events["server_crashed"], (path,))
 
     # player_made_advancement event
-    for action in ['made the advancement', 'completed the challenge', 'reached the goal']:
-        match = re.fullmatch(r'\w{1,16} has %s \[.+\]' % action, info.content)
+    for action in [
+        "made the advancement",
+        "completed the challenge",
+        "reached the goal",
+    ]:
+        match = re.fullmatch(r"\w{1,16} has %s \[.+\]" % action, info.content)
         if match is not None:
-            player, rest = info.content.split(' ', 1)
-            adv = re.search(r'(?<=%s \[).+(?=\])' % action, rest).group()
-            server.dispatch_event(_events['player_made_advancement'],(player,adv))
+            player, rest = info.content.split(" ", 1)
+            adv = re.search(r"(?<=%s \[).+(?=\])" % action, rest).group()
+            server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
     # death_message event
     for i in _death_messages["msgs"]:
@@ -128,11 +111,15 @@ def on_info(server: ServerInterface, info: Info):
         server.dispatch_event(_events["saved_game"])
 
     # ========== API ==========
-    # Get the server version
-    if re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/",info.content) is not None:
-        _mc_version=re.search(
-        r"Starting minecraft server version /[a-z0-9.]/", info.content
-    ).group()
+    # get minecraft version
+    if (
+        re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/", info.content)
+        is not None
+    ):
+        _mc_version = re.search(
+            r"Starting minecraft server version /[a-z0-9.]/", info.content
+        ).group()
+
 
 # kill server
 def kill_server(server: ServerInterface):
@@ -173,29 +160,10 @@ def get_server_properties() -> dict:
         return javaproperties.load(f)
 
 
-# get uuid
-def get_player_uuid(player: str, mode=None):
-    with open(_config_path, "r", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
-    if mode:
-        player_uuid = _get_online_uuid(player)
-        if player_uuid is None:
-            raise f"Can't get {player}'s uuid"
-    else:
-        return _get_offline_uuid(player)
-
-    if cfg["online-mode"] is True:
-        player_uuid = _get_online_uuid(player)
-        if player_uuid is None:
-            raise f"Can't get {player}'s uuid"
-        return player_uuid
-    elif cfg["online-mode"] is False:
-        return _get_offline_uuid(player)
-
-    server_cfg = get_server_properties()
-    if server_cfg["online-mode"]:
-        player_uuid = _get_online_uuid(player)
-        if player_uuid is None:
-            raise f"Can't get {player}'s uuid"
-        return player_uuid
-    return _get_offline_uuid(player)
+def get_tps(server: ServerInterface, secs: int = 1) -> float:
+    if not server.is_rcon_running():
+        raise "Need open MCDR's RCON future"
+    server.rcon_query("debug start")
+    time.sleep(secs)
+    response = server.rcon_query("debug stop")
+    return float(parse("Stopped debug profiling after {tps}", response)["tps"])
