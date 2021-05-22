@@ -34,7 +34,7 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.0.4"
+_plugin_version = "0.0.5"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
@@ -110,15 +110,13 @@ def on_info(server: ServerInterface, info: Info):
         server.dispatch_event(_events["server_crashed"], (path,))
 
     # player_made_advancement event
-    adv_parsed = parse("{player} has {action} [{advancement`}]", info.content)
+    for action in ['made the advancement', 'completed the challenge', 'reached the goal']:
+        match = re.fullmatch(r'\w{1,16} has %s \[.+\]' % action, info.content)
+        if match is not None:
+            player, rest = info.content.split(' ', 1)
+            adv = re.search(r'(?<=%s \[).+(?=\])' % action, rest).group()
+            server.dispatch_event(_events['player_made_advancement'],(player,adv))
 
-    if (adv_parsed["player"] and adv_parsed["advancement"] is not None) and adv_parsed[
-        "action"
-    ] in ["made the advancement", "completed the challenge", "reached the goal"]:
-        server.dispatch_event(
-            _events["player_made_advancement"],
-            (adv_parsed["player"], adv_parsed["advancement"]),
-        )
     # death_message event
     for i in _death_messages["msgs"]:
         if re.fullmatch(i, info.content):
@@ -131,12 +129,10 @@ def on_info(server: ServerInterface, info: Info):
 
     # ========== API ==========
     # Get the server version
-    mcversion_parsed = parse(
-        "Starting minecraft server version {version}", info.content
-    )["version"]
-    if mcversion_parsed is not None:
-        _mc_version = mcversion_parsed
-
+    if re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/",info.content) is not None:
+        _mc_version=re.search(
+        r"Starting minecraft server version /[a-z0-9.]/", info.content
+    ).group()
 
 # kill server
 def kill_server(server: ServerInterface):
