@@ -44,7 +44,7 @@ _events = {
     "saved_game": PluginEvent(_plugin_id + ".saved_game"),
 }
 _death_messages = {}
-_config_path = path.join(".", "config", "moreapis.yml")
+_config_path = path.join(".", "config", _plugin_id, "moreapis.yml")
 _default_cfg = """# MoreAPIs config
 # online-mode (default: true)
 online-mode: true
@@ -61,28 +61,15 @@ PLUGIN_METADATA = {
 
 def on_load(server: ServerInterface, old):
     global _death_messages
-    if path.exists(
-        path.join(
-            server.get_plugin_file_path(_plugin_id),
-            "..",
-            "MoreAPIs",
-            "death_message.yml",
+    if not path.exists(path.join(server.get_data_folder, "death_messages.yml")):
+        server.logger.warn("Downloading death_message.yml...")
+        response = requests.get(
+            "https://hub.fastgit.org/HuajiMUR233/MoreAPIs/releases/download/DeathMsgs/death_messages.yml"
         )
-    ):
-        shutil.move(
-            path.join(
-                server.get_plugin_file_path(_plugin_id),
-                "..",
-                "MoreAPIs",
-                "death_message.yml",
-            ),
-            path.join(server.get_data_folder, "death_message.yml"),
-        )
-    if not path.exists(path.join(server.get_data_folder, "death_message.yml")):
-        server.logger.error("Can't find death_message.yml")
-        server.unload_plugin(_plugin_id)
+        with open(path.join(server.get_data_folder, "death_messages.yml"), "wb") as f:
+            f.write(response.content)
     with open(
-        path.join(server.get_data_folder, "death_message.yml"), "r", encoding="utf-8"
+        path.join(server.get_data_folder, "death_messages.yml"), "r", encoding="utf-8"
     ) as f:
         _death_messages = yaml.safe_load(f)
     if not path.exists():
