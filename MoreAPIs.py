@@ -61,15 +61,15 @@ PLUGIN_METADATA = {
 
 def on_load(server: ServerInterface, old):
     global _death_messages
-    if not path.exists(path.join(server.get_data_folder, "death_messages.yml")):
+    if not path.exists(path.join(server.get_data_folder(), "death_messages.yml")):
         server.logger.warn("Downloading death_message.yml...")
         response = requests.get(
             "https://hub.fastgit.org/HuajiMUR233/MoreAPIs/releases/download/DeathMsgs/death_messages.yml"
         )
-        with open(path.join(server.get_data_folder, "death_messages.yml"), "wb") as f:
+        with open(path.join(server.get_data_folder(), "death_messages.yml"), "wb") as f:
             f.write(response.content)
     with open(
-        path.join(server.get_data_folder, "death_messages.yml"), "r", encoding="utf-8"
+        path.join(server.get_data_folder(), "death_messages.yml"), "r", encoding="utf-8"
     ) as f:
         _death_messages = yaml.safe_load(f)
     if not path.exists():
