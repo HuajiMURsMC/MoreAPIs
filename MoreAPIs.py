@@ -71,13 +71,9 @@ def on_load(server: ServerInterface, old):
 
 @new_thread("More APIs")
 def on_info(server: ServerInterface, info: Info):
-    # :)
     if info.is_user:
         return
 
-    # ========== Events ==========
-
-    # server_crashed event
     if info.logging_level == "ERROR" and info.content.startswith(
         "This crash report has been saved to:"
     ):
@@ -89,7 +85,6 @@ def on_info(server: ServerInterface, info: Info):
         )
         server.dispatch_event(_events["server_crashed"], (path,))
 
-    # player_made_advancement event
     for action in [
         "made the advancement",
         "completed the challenge",
@@ -101,18 +96,14 @@ def on_info(server: ServerInterface, info: Info):
             adv = re.search(r"(?<=%s \[).+(?=\])" % action, rest).group()
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
-    # death_message event
     for i in _death_messages["msgs"]:
         if re.fullmatch(i, info.content):
             server.dispatch_event(_events["death_message"], (info.content,))
             break
 
-    # saved_game event
     if info.content == "Saved the game":
         server.dispatch_event(_events["saved_game"])
 
-    # ========== API ==========
-    # get minecraft version
     if (
         re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/", info.content)
         is not None
