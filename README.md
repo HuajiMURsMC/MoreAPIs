@@ -2,7 +2,7 @@
 
 >   一个非常简单的插件，提供了一些(二次封装的)API与事件
 
- 
+&nbsp;
 
 ---
 
@@ -10,23 +10,23 @@
 
 [`javaproperties`](https://pypi.org/project/javaproperties/): 用于解析 [`server.properties`](https://minecraft.fandom.com/zh/wiki/Server.properties)
 
- 
+&nbsp;
 
 ---
 
 ## API 列表
 
- 
+&nbsp;
 
 **注意**: 以下API均在MoreAPIs类中，使用前需先进行实例化
 
- 
+&nbsp;
 
 #### `MoreAPIs.get_server_version()`
 
 获取服务端的版本
 
- 
+&nbsp;
 
 #### `MoreAPIs.kill_server(server:ServerInterface)`
 
@@ -35,6 +35,8 @@
 参数:
 
 `server`: ServerInterface
+
+&nbsp;
 
 #### `MoreAPIs.send_server_list_ping(host: str, port, timeout: int)`
 
@@ -56,7 +58,7 @@
 
 默认: `5`
 
- 
+&nbsp;
 
 #### `MoreAPIs.execute_at(server: ServerInterface,player: str,command: str)`
 
@@ -72,19 +74,19 @@ Bukkit 方式注册的指令可能不行
 
 `command`: 要执行的指令
 
- 
+&nbsp;
 
 #### `MoreAPIs.get_mcdr_config()`
 
 获取 MCDReforged 的配置文件
 
- 
+&nbsp;
 
 #### `MoreAPIs.get_server_properties()`
 
 获取 Minecraft 的 `server.properties`
 
- 
+&nbsp;
 
 #### `MoreAPIs.get_tps(secs: int = 1)`
 
@@ -96,7 +98,7 @@ Bukkit 方式注册的指令可能不行
 
 `secs`: 测试时间(单位: 秒)
 
- 
+&nbsp;
 
 ---
 
@@ -108,7 +110,7 @@ Bukkit 方式注册的指令可能不行
 
 参数: `ServerInterface`, `death_message`
 
- 
+&nbsp;
 
 #### `more_apis.player_made_advancement`
 
@@ -116,7 +118,7 @@ Bukkit 方式注册的指令可能不行
 
 参数: `ServerInterface`, `advancement`
 
- 
+&nbsp;
 
 #### `more_apis.server_crashed`
 
@@ -124,10 +126,11 @@ Bukkit 方式注册的指令可能不行
 
 参数: `ServerInterface`, `crash_report_path`
 
- 
+&nbsp;
 
 #### `more_apis.saved_game`
 
 当服务端输出 `Saved the game` 后触发
 
 参数: `ServerInterface`
+
