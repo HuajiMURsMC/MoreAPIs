@@ -60,7 +60,7 @@ def on_load(server: ServerInterface, old):
         os.path.join(
             server.get_plugin_file_path(_plugin_id),
             "..",
-            "MoreAPIs",
+            "More_APIs",
             "death_messages.yml",
         ),
         "r",
