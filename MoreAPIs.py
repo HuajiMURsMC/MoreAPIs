@@ -35,7 +35,7 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.1.1-dev"
+_plugin_version = "0.1.1"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
