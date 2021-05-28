@@ -16,8 +16,6 @@
 
 ## API 列表
 
-&nbsp;
-
 **注意**: 以下API均在MoreAPIs类中，使用前需先进行实例化
 
 &nbsp;
