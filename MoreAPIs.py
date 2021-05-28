@@ -53,7 +53,7 @@ PLUGIN_METADATA = {
     "dependencies": {"mcdreforged": ">=1.0.0"},
 }
 
-
+@new_thread("More APIs")
 def on_load(server: ServerInterface, old):
     global _death_messages
     with open(
@@ -69,7 +69,7 @@ def on_load(server: ServerInterface, old):
         _death_messages = yaml.safe_load(f)
 
 
-@new_thread
+@new_thread("More APIs")
 def on_info(server: ServerInterface, info: Info):
     # :)
     if info.is_user:
@@ -121,7 +121,7 @@ def on_info(server: ServerInterface, info: Info):
             r"Starting minecraft server version /[a-z0-9.]/", info.content
         ).group()
 
-
+@new_thread("More APIs")
 class MoreAPIs():
     def __init__(self, server: ServerInterface):
         self.server = server
