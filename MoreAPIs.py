@@ -17,18 +17,19 @@
 """
 
 
+from typing import Any
 from psutil import Process
-from parse import parse
-from os import path
 
 import time
 import re
+import os
 
 from ruamel import yaml
-import javaproperties
-import requests
 
-from MoreAPIs.StatusPing import StatusPing
+import javaproperties
+import parse
+
+from .More_APIs.StatusPing import StatusPing
 
 from mcdreforged.api.all import *
 
@@ -55,15 +56,15 @@ PLUGIN_METADATA = {
 
 def on_load(server: ServerInterface, old):
     global _death_messages
-    if not path.exists(path.join(server.get_data_folder(), "death_messages.yml")):
-        server.logger.warn("Downloading death_message.yml...")
-        response = requests.get(
-            "https://hub.fastgit.org/HuajiMUR233/MoreAPIs/releases/download/DeathMsgs/death_messages.yml"
-        )
-        with open(path.join(server.get_data_folder(), "death_messages.yml"), "wb") as f:
-            f.write(response.content)
     with open(
-        path.join(server.get_data_folder(), "death_messages.yml"), "r", encoding="utf-8"
+        os.path.join(
+            server.get_plugin_file_path(_plugin_id),
+            "..",
+            "MoreAPIs",
+            "death_messages.yml",
+        ),
+        "r",
+        encoding="utf-8",
     ) as f:
         _death_messages = yaml.safe_load(f)
 
@@ -80,7 +81,7 @@ def on_info(server: ServerInterface, info: Info):
     if info.logging_level == "ERROR" and info.content.startswith(
         "This crash report has been saved to:"
     ):
-        path = parse("This crash report has been saved to: {path}", info.content)[
+        path = parse.parse("This crash report has been saved to: {path}", info.content)[
             "path"
         ]
         server.logger.warning(
@@ -121,49 +122,49 @@ def on_info(server: ServerInterface, info: Info):
         ).group()
 
 
-# kill server
-def kill_server(server: ServerInterface):
-    server_process = Process(server.get_server_pid)
-    server_process.kill()
+class MoreAPIs():
+    def __init__(self, server: ServerInterface):
+        self.server = server
 
+    def kill_server(self) -> Any:
+        server_process = Process(self.server.get_server_pid)
+        server_process.kill()
 
-# get server version
-def get_server_version(server: ServerInterface) -> str:
-    if not server.is_server_startup:
-        raise RuntimeError("Cannot invoke get_server_version before server startup")
-    return _mc_version
+    def get_server_version(self) -> str:
+        if not self.server.is_server_startup:
+            raise RuntimeError("Cannot invoke get_server_version before server startup")
+        return _mc_version
 
+    def send_server_list_ping(
+        host: str = "localhost", port: int = 25565, timeout: int = 5
+    ) -> dict:
+        response = StatusPing(host, port, timeout)
+        return response.get_status()
 
-# send server list ping
-def send_server_list_ping(
-    host: str = "localhost", port: int = 25565, timeout: int = 5
-) -> dict:
-    response = StatusPing(host, port, timeout)
-    return response.get_status()
+    def execute_at(self, player: str, command: str):
+        self.server.execute(f"execute as {player} at {player} {command}")
 
+    def get_mcdr_config(self) -> dict:
+        with open("config.yml", "r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
 
-# execute at
-def execute_at(server: ServerInterface, player: str, command: str):
-    server.execute(f"execute as {player} at {player} {command}")
+    def get_server_properties(self) -> dict:
+        server_dir = self.get_mcdr_config()["working_directory"]
+        with open(
+            os.path.join(server_dir, "server.properties"), "r", encoding="utf-8"
+        ) as f:
+            return javaproperties.load(f)
 
+    def get_tps(server: ServerInterface, secs: int = 1) -> float:
+        if not server.is_rcon_running():
+            raise RuntimeError("Need open MCDR's RCON future")
+        server.rcon_query("debug start")
+        time.sleep(secs)
+        response = server.rcon_query("debug stop")
+        return float(
+            parse.parse("Stopped debug profiling after {tps}", response)["tps"]
+        )
 
-# get mcdr config
-def get_mcdr_config() -> dict:
-    with open("config.yml", "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-# get server.properties
-def get_server_properties() -> dict:
-    server_dir = get_mcdr_config()["working_directory"]
-    with open(path.join(server_dir, "server.properties"), "r", encoding="utf-8") as f:
-        return javaproperties.load(f)
-
-
-def get_tps(server: ServerInterface, secs: int = 1) -> float:
-    if not server.is_rcon_running():
-        raise "Need open MCDR's RCON future"
-    server.rcon_query("debug start")
-    time.sleep(secs)
-    response = server.rcon_query("debug stop")
-    return float(parse("Stopped debug profiling after {tps}", response)["tps"])
+if __name__=="__main__":
+    print("You must use it in MCDReforged")
+    exit(1)

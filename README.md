@@ -16,13 +16,19 @@
 
 ## API 列表
 
-#### `get_server_version()`
+
+
+**注意**: 以下API均在MoreAPIs类中，使用前需先进行实例化
+
+
+
+#### `MoreAPIs.get_server_version()`
 
 获取服务端的版本
 
 
 
-#### `kill_server(server:ServerInterface)`
+#### `MoreAPIs.kill_server(server:ServerInterface)`
 
 强制终止服务端
 
@@ -30,7 +36,7 @@
 
 `server`: ServerInterface
 
-#### `send_server_list_ping(host: str, port, timeout: int)`
+#### `MoreAPIs.send_server_list_ping(host: str, port, timeout: int)`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft: Java Editon 服务器
 
@@ -52,7 +58,7 @@
 
 
 
-#### `execute_at(server: ServerInterface,player: str,command: str)`
+#### `MoreAPIs.execute_at(server: ServerInterface,player: str,command: str)`
 
 在某个玩家执行某条指令
 
@@ -68,19 +74,19 @@ Bukkit 注册指令可能不行
 
 
 
-#### `get_mcdr_config()`
+#### `MoreAPIs.get_mcdr_config()`
 
 获取MCDR的配置文件
 
 
 
-#### `get_server_properties()`
+#### `MoreAPIs.get_server_properties()`
 
 获取 Minecraft 的 `server.properties`
 
 
 
-#### `get_tps(secs: int = 1)`
+#### `MoreAPIs.get_tps(secs: int = 1)`
 
 获取服务器的TPS
 
