@@ -53,6 +53,7 @@ PLUGIN_METADATA = {
     "dependencies": {"mcdreforged": ">=1.0.0"},
 }
 
+
 @new_thread("More APIs")
 def on_load(server: ServerInterface, old):
     global _death_messages
@@ -112,8 +113,9 @@ def on_info(server: ServerInterface, info: Info):
             r"Starting minecraft server version /[a-z0-9.]/", info.content
         ).group()
 
+
 @new_thread("More APIs")
-class MoreAPIs():
+class MoreAPIs:
     def __init__(self, server: ServerInterface):
         self.server = server
 
@@ -156,6 +158,7 @@ class MoreAPIs():
             parse.parse("Stopped debug profiling after {tps}", response)["tps"]
         )
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     print("You must use it in MCDReforged")
     exit(1)
