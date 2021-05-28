@@ -4,11 +4,15 @@
 
 
 
+
+
 ---
 
 ## Python 依赖:
 
 [`javaproperties`](https://pypi.org/project/javaproperties/): 用于解析 [`server.properties`](https://minecraft.fandom.com/zh/wiki/Server.properties)
+
+
 
 
 
@@ -18,13 +22,19 @@
 
 
 
+
+
 **注意**: 以下API均在MoreAPIs类中，使用前需先进行实例化
+
+
 
 
 
 #### `MoreAPIs.get_server_version()`
 
 获取服务端的版本
+
+
 
 
 
@@ -58,11 +68,13 @@
 
 
 
+
+
 #### `MoreAPIs.execute_at(server: ServerInterface,player: str,command: str)`
 
 在某个玩家执行某条指令
 
-Bukkit 注册指令可能不行
+Bukkit 方式注册的指令可能不行
 
 参数:
 
@@ -74,9 +86,13 @@ Bukkit 注册指令可能不行
 
 
 
+
+
 #### `MoreAPIs.get_mcdr_config()`
 
-获取MCDR的配置文件
+获取 MCDReforged 的配置文件
+
+
 
 
 
@@ -86,15 +102,19 @@ Bukkit 注册指令可能不行
 
 
 
+
+
 #### `MoreAPIs.get_tps(secs: int = 1)`
 
-获取服务器的TPS
+获取服务器的 TPS
 
-**需开启RCON来使用**
+**需先配置好 [RCON](https://mcdreforged.readthedocs.io/zh_CN/latest/configure.html#rcon) 来使用**
 
 参数:
 
 `secs`: 测试时间(单位: 秒)
+
+
 
 
 
@@ -110,6 +130,8 @@ Bukkit 注册指令可能不行
 
 
 
+
+
 #### `more_apis.player_made_advancement`
 
 玩家获得了一个进度后触发
@@ -118,11 +140,15 @@ Bukkit 注册指令可能不行
 
 
 
+
+
 #### `more_apis.server_crashed`
 
-服务器崩溃后触发，判断崩溃方式与`CrashRestart`插件相同
+服务器崩溃后触发，判断崩溃方式与 `CrashRestart` 插件相同
 
 参数: `ServerInterface`, `crash_report_path`
+
+
 
 
 
