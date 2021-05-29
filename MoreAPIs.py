@@ -29,7 +29,7 @@ from ruamel import yaml
 import javaproperties
 import parse
 
-from .More_APIs.StatusPing import StatusPing
+from More_APIs.StatusPing import StatusPing
 
 from mcdreforged.api.all import *
 
