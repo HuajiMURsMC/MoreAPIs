@@ -21,7 +21,7 @@ msgs:
   - "\\w{1,16} fell off scaffolding"
   - "\\w{1,16} fell while climbing"
   - "\\w{1,16} was impaled on a stalagmite"
-  - "\\w{1,16} was impaled on a stalagmite whilst fighting .+
+  - "\\w{1,16} was impaled on a stalagmite whilst fighting .+"
   - "\\w{1,16} was squashed by a falling anvil"
   - "\\w{1,16} was squashed by a falling anvil whilst fighting .+"
   - "\\w{1,16} was squashed by a falling block"
