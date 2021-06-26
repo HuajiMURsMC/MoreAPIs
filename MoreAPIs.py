@@ -17,17 +17,15 @@
 """
 
 
-from typing import Any
 from psutil import Process
+from parse import parse
+from ruamel import yaml
+import javaproperties
+import requests
 
 import time
 import re
 import os
-
-from ruamel import yaml
-
-import javaproperties
-import parse
 
 from More_APIs.StatusPing import StatusPing
 
@@ -35,7 +33,7 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.1.2"
+_plugin_version = "0.2.0-beta"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
@@ -43,7 +41,6 @@ _events = {
     "server_crashed": PluginEvent(_plugin_id + ".server_crashed"),
     "saved_game": PluginEvent(_plugin_id + ".saved_game"),
 }
-_death_messages = {}
 
 PLUGIN_METADATA = {
     "id": _plugin_id,
@@ -55,30 +52,14 @@ PLUGIN_METADATA = {
 
 
 @new_thread("More APIs")
-def on_load(server: ServerInterface, old):
-    global _death_messages
-    with open(
-        os.path.join(
-            server.get_plugin_file_path(_plugin_id),
-            "..",
-            "More_APIs",
-            "death_messages.yml",
-        ),
-        "r",
-        encoding="utf-8",
-    ) as f:
-        _death_messages = yaml.safe_load(f)
-
-
-@new_thread("More APIs")
 def on_info(server: ServerInterface, info: Info):
     if info.is_user:
         return
-
+    death_message = __get_death_messages(server)
     if info.logging_level == "ERROR" and info.content.startswith(
         "This crash report has been saved to:"
     ):
-        path = parse.parse("This crash report has been saved to: {path}", info.content)[
+        path = parse("This crash report has been saved to: {path}", info.content)[
             "path"
         ]
         server.logger.warning(
@@ -97,7 +78,7 @@ def on_info(server: ServerInterface, info: Info):
             adv = re.search(r"(?<=%s \[).+(?=\])" % action, rest).group()
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
-    for i in _death_messages["msgs"]:
+    for i in death_message["msgs"]:
         if re.fullmatch(i, info.content):
             server.dispatch_event(_events["death_message"], (info.content,))
             break
@@ -118,23 +99,45 @@ def on_info(server: ServerInterface, info: Info):
 class MoreAPIs:
     def __init__(self, server: ServerInterface):
         self.server = server
+        self.server_properties = self.get_server_properties()
+        self.version_data = self.__data_remapper(
+            "https://hub.fastgit.org/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
+        )
 
-    def kill_server(self) -> Any:
+    def __data_remapper(self, data_url) -> dict:
+        datas = requests.get(data_url).json()
+        mapped = {}
+        for data in datas:
+            if not data["version"] in mapped:
+                mapped[data["version"]] = data["minecraftVersion"]
+            else:
+                mapped[data["version"]] += "," + data["minecraftVersion"]
+        for protocol_ver in mapped:
+            if "," in mapped[protocol_ver]:
+                versions = mapped[protocol_ver].split(",")
+                mapped[protocol_ver] = versions[0] + "~" + versions[-1]
+        return mapped
+
+    def kill_server(self) -> None:
         server_process = Process(self.server.get_server_pid)
         server_process.kill()
 
     def get_server_version(self) -> str:
         if not self.server.is_server_startup:
             raise RuntimeError("Cannot invoke get_server_version before server startup")
-        return _mc_version
+        response = StatusPing(
+            "localhost", self.server_properties["server-port"]
+        ).get_status()
+        version = response["version"]["protocol"]
+        return self.version_data[version]
 
     def send_server_list_ping(
-        host: str = "localhost", port: int = 25565, timeout: int = 5
+        self, host: str = "localhost", port: int = 25565, timeout: int = 5
     ) -> dict:
         response = StatusPing(host, port, timeout)
         return response.get_status()
 
-    def execute_at(self, player: str, command: str):
+    def execute_at(self, player: str, command: str) -> None:
         self.server.execute(f"execute as {player} at {player} {command}")
 
     def get_mcdr_config(self) -> dict:
@@ -148,15 +151,36 @@ class MoreAPIs:
         ) as f:
             return javaproperties.load(f)
 
-    def get_tps(server: ServerInterface, secs: int = 1) -> float:
-        if not server.is_rcon_running():
-            raise RuntimeError("Need open MCDR's RCON future")
-        server.rcon_query("debug start")
-        time.sleep(secs)
-        response = server.rcon_query("debug stop")
-        return float(
-            parse.parse("Stopped debug profiling after {tps}", response)["tps"]
+    def get_tps(self, secs: int = 1) -> float:
+        if self.server.is_on_executor_thread:
+            raise RuntimeError('Cannot invoke "get_tps" on the task executor thread')
+        if not self.server_properties["enable-rcon"]:
+            raise RuntimeError("Need open Minecraft Server's RCON future")
+        rcon = RconConnection(
+            "localhost",
+            self.server_properties["rcon.port"],
+            self.server_properties["rcon.password"],
         )
+        rcon.connect()
+        rcon.send_command("debug start")
+        time.sleep(secs)
+        response = rcon.send_command("debug stop")
+        rcon.disconnect()
+        return float(parse("Stopped debug profiling after {tps}", response)["tps"])
+
+
+def __get_death_messages(server: ServerInterface) -> dict:
+    with open(
+        os.path.join(
+            server.get_plugin_file_path(_plugin_id),
+            "..",
+            "More_APIs",
+            "death_messages.yml",
+        ),
+        "r",
+        encoding="utf-8",
+    ) as f:
+        return yaml.safe_load(f)
 
 
 if __name__ == "__main__":
