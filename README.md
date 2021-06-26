@@ -148,7 +148,7 @@
 
 ## 更新日志
 
-#### 0.2.0-beta
+### 0.2.0-beta
 
 **注意：这是一个测试性版本，在实际运行中可能出现各种 Bug**
 
@@ -159,3 +159,4 @@ get_server_version 函数的 Minecraft 服务端版本获取方式更换为使�
 get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来进行获取
 
 修复了各种各样因为没人用而没人发现的 Bug
+
