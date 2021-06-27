@@ -172,8 +172,7 @@ class MoreAPIs:
 def __get_death_messages(server: ServerInterface) -> dict:
     with open(
         os.path.join(
-            server.get_plugin_file_path(_plugin_id),
-            "..",
+            os.path.dirname(server.get_plugin_file_path(_plugin_id)),
             "More_APIs",
             "death_messages.yml",
         ),
