@@ -33,7 +33,7 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.2.0-beta"
+_plugin_version = "0.2.0-beta.1"
 _mc_version = None
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
@@ -84,7 +84,7 @@ def on_info(server: ServerInterface, info: Info):
             break
 
     if info.content == "Saved the game":
-        server.dispatch_event(_events["saved_game"])
+        server.dispatch_event(_events["saved_game"],(,))
 
     if (
         re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/", info.content)
