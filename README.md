@@ -164,4 +164,8 @@ get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来�
 
 ## 0.2.0-beta.1
 
+**注意：这是一个测试性版本，在实际运行中可能出现各种 Bug**
+
 再次尝试修复了 [#3](https://github.com/HuajiMUR233/MoreAPIs/issues/3) :-(
+
+以及一个小Bug(
