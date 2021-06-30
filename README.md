@@ -8,17 +8,7 @@
 
 ## Python 依赖
 
-[javaproperties](https://pypi.org/project/javaproperties/)：解析 [server.properties](https://minecraft.fandom.com/zh/wiki/Server.properties)
-
-[ruamel.yaml](https://pypi.org/project/ruamel.yaml/)：解析 MCDReforged 的配置文件与死亡消息文件
-
-[request](https://pypi.org/project/requests/)：获取 [protocolVersions.json](https://github.com/PrismarineJS/minecraft-data/blob/master/data/pc/common/protocolVersions.json)
-
-[parse](https://pypi.org/project/parse/)：解析 Minecraft 服务端输出的一些信息
-
-[psutil](https://pypi.org/project/psutil/)：杀进程
-
-**注**：除 javaproperties 以外，其它依赖已包含在MCDR中
+[javaproperties](https://pypi.org/project/javaproperties/)
 
 &nbsp;
 
@@ -26,13 +16,15 @@
 
 ## API 列表
 
-**注意**：以下API均在MoreAPIs类中，使用前需先进行实例化
+**注意**：以下API均在 MoreAPIs 类中，使用前需先进行实例化，且**不可在主线程调用**
 
 &nbsp;
 
 #### `MoreAPIs.get_server_version()`
 
-获取服务端的版本，需在 Minecraft 服务端启动后才能获取
+获取服务端的版本
+
+**注意：需在 Minecraft 服务端启动后才能获取**
 
 &nbsp;
 
@@ -100,7 +92,7 @@
 
 获取服务器的 TPS
 
-**需先配置好 Minecraft 的 [RCON](https://wiki.vg/RCON) 才能使用**
+**注意：需先配置好 Minecraft 的 [RCON](https://wiki.vg/RCON) 才能使用**
 
 参数:
 
@@ -183,6 +175,22 @@ get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来�
 **注意：这是一个预发布版本，在实际运行中可能出现各种 Bug**
 
 可能修复了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
+
+&nbsp;
+
+## 0.2.2-alpha
+
+**注意：这是一个尝试性版本，在实际运行中可能出现各种奇葩 Bug**
+
+完全修了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
+
+现在必须在新线程内执行全部函数
+
+把眼花缭乱的依赖列表拖了回来
+
+强制终止的方式修改为直接调用 MCDR 的私有函数
+
+去掉了个之前忘删了的废弃变量
 
 &nbsp;
 

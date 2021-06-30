@@ -17,7 +17,6 @@
 """
 
 
-from psutil import Process
 from parse import parse
 from ruamel import yaml
 import javaproperties
@@ -33,8 +32,7 @@ from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.2.1-rc"
-_mc_version = None
+_plugin_version = "0.2.2-alpha"
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
     "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
@@ -51,7 +49,7 @@ PLUGIN_METADATA = {
 }
 
 
-@new_thread("More APIs")
+@new_thread("More APIs' Handler")
 def on_info(server: ServerInterface, info: Info):
     if info.is_user:
         return
@@ -72,10 +70,10 @@ def on_info(server: ServerInterface, info: Info):
         "completed the challenge",
         "reached the goal",
     ]:
-        match = re.fullmatch(r"\w{1,16} has %s \[.+\]" % action, info.content)
+        match = re.fullmatch(r"\w{1,16} has %s \[.+]" % action, info.content)
         if match is not None:
             player, rest = info.content.split(" ", 1)
-            adv = re.search(r"(?<=%s \[).+(?=\])" % action, rest).group()
+            adv = re.search(r"(?<=%s \[).+(?=])" % action, rest).group()
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
     for i in death_message["msgs"]:
@@ -86,23 +84,17 @@ def on_info(server: ServerInterface, info: Info):
     if info.content == "Saved the game":
         server.dispatch_event(_events["saved_game"],())
 
-    if (
-        re.fullmatch(r"Starting minecraft server version /[a-z0-9.]/", info.content)
-        is not None
-    ):
-        _mc_version = re.search(
-            r"Starting minecraft server version /[a-z0-9.]/", info.content
-        ).group()
 
-
-@new_thread("More APIs")
 class MoreAPIs:
     def __init__(self, server: ServerInterface):
+        if server.is_on_executor_thread():
+            raise RuntimeError('Cannot use More APIs on the task executor thread')
         self.server = server
         self.server_properties = self.get_server_properties()
         self.version_data = self.__data_remapper(
             "https://hub.fastgit.org/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
         )
+        self.mcdr_server=server._ServerInterface__mcdr_server
 
     def __data_remapper(self, data_url) -> dict:
         datas = requests.get(data_url).json()
@@ -115,18 +107,17 @@ class MoreAPIs:
         for protocol_ver in mapped:
             if "," in mapped[protocol_ver]:
                 versions = mapped[protocol_ver].split(",")
-                mapped[protocol_ver] = versions[0] + "~" + versions[-1]
+                mapped[protocol_ver] = versions[-1] + "~" + versions[0]
         return mapped
 
     def kill_server(self) -> None:
-        server_process = Process(self.server.get_server_pid)
-        server_process.kill()
+        self.mcdr_server.stop(forced=True)
 
     def get_server_version(self) -> str:
         if not self.server.is_server_startup:
             raise RuntimeError("Cannot invoke get_server_version before server startup")
         response = StatusPing(
-            "localhost", self.server_properties["server-port"]
+            "localhost", int(self.server_properties["server-port"])
         ).get_status()
         version = response["version"]["protocol"]
         return self.version_data[version]
@@ -152,13 +143,11 @@ class MoreAPIs:
             return javaproperties.load(f)
 
     def get_tps(self, secs: int = 1) -> float:
-        if self.server.is_on_executor_thread:
-            raise RuntimeError('Cannot invoke "get_tps" on the task executor thread')
         if not self.server_properties["enable-rcon"]:
             raise RuntimeError("Need open Minecraft Server's RCON future")
         rcon = RconConnection(
             "localhost",
-            self.server_properties["rcon.port"],
+            int(self.server_properties["rcon.port"]),
             self.server_properties["rcon.password"],
         )
         rcon.connect()
@@ -166,7 +155,8 @@ class MoreAPIs:
         time.sleep(secs)
         response = rcon.send_command("debug stop")
         rcon.disconnect()
-        return float(parse("Stopped debug profiling after {tps}", response)["tps"])
+        return float(parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
+                           response)['tps'])
 
 
 def __get_death_messages(server: ServerInterface) -> dict:
