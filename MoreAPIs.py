@@ -28,11 +28,12 @@ import os
 
 from More_APIs.StatusPing import StatusPing
 
+from mcdreforged.mcdr_state import MCDReforgedFlag
 from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.2.2-alpha"
+_plugin_version = "0.2.3-alpha"
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
     "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
@@ -50,7 +51,7 @@ PLUGIN_METADATA = {
 
 
 @new_thread("More APIs' Handler")
-def on_info(server: ServerInterface, info: Info):
+def on_info(server: ServerInterface or PluginServerInterface, info: Info):
     if info.is_user:
         return
     death_message = __get_death_messages(server)
@@ -77,8 +78,9 @@ def on_info(server: ServerInterface, info: Info):
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
     for i in death_message["msgs"]:
-        if re.fullmatch(i, info.content):
-            server.dispatch_event(_events["death_message"], (info.content,))
+        match=re.fullmatch(i, info.content)
+        if match is not None:
+            server.dispatch_event(_events["death_message"], (info.content,match.group[1]))
             break
 
     if info.content == "Saved the game":
@@ -94,7 +96,10 @@ class MoreAPIs:
         self.version_data = self.__data_remapper(
             "https://hub.fastgit.org/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
         )
-        self.mcdr_server=server._ServerInterface__mcdr_server
+        try:
+            self.mcdr_server=server._mcdr_server
+        except:
+            self.mcdr_server=server._ServerInterface__mcdr_server
 
     def __data_remapper(self, data_url) -> dict:
         datas = requests.get(data_url).json()
@@ -111,7 +116,11 @@ class MoreAPIs:
         return mapped
 
     def kill_server(self) -> None:
-        self.mcdr_server.stop(forced=True)
+        try:
+            self.server.kill()
+        except:
+            self.mcdr_server.remove_flag(MCDReforgedFlag.EXIT_AFTER_STOP)
+            self.mcdr_server.stop(forced=True)
 
     def get_server_version(self) -> str:
         if not self.server.is_server_startup:

@@ -2,15 +2,13 @@
 
 >   一个非常简单的插件，提供了一些(二次封装的)API与事件
 
-&nbsp;
+\>\>[如何在MCDR2.x使用本插件](./In MCDR 2.x.md)<<
 
 ---
 
 ## Python 依赖
 
 [javaproperties](https://pypi.org/project/javaproperties/)
-
-&nbsp;
 
 ---
 
@@ -98,8 +96,6 @@
 
 `secs`：测试时间(单位：秒)
 
-&nbsp;
-
 ---
 
 ## 事件列表
@@ -108,15 +104,21 @@
 
 玩家死亡显示死亡信息后触发(仅对原版死亡消息进行支持)
 
-参数：`ServerInterface`，`death_message`
+参数：`ServerInterface`，`death_message`，`player`
+
+`death_message`：死亡信息
+
+`player`：死亡的玩家
 
 &nbsp;
 
 #### `more_apis.player_made_advancement`
 
-玩家获得了一个进度后触发
+玩家取得得了一个进度后触发
 
 参数：`ServerInterface`，`advancement`
+
+`advancement`：取得的进度
 
 &nbsp;
 
@@ -126,6 +128,8 @@
 
 参数：`ServerInterface`，`crash_report_path`
 
+`crash_report_path`：Crash Report 的位置
+
 &nbsp;
 
 #### `more_apis.saved_game`
@@ -133,8 +137,6 @@
 当服务端输出 `Saved the game` 后触发
 
 参数：`ServerInterface`
-
-&nbsp;
 
 ---
 
@@ -144,13 +146,13 @@
 
 **注意：这是一个测试性版本，在实际运行中可能出现各种 Bug**
 
-尝试修复了 [#3](https://github.com/HuajiMUR233/MoreAPIs/issues/3)
+1. 尝试修复了 [#3](https://github.com/HuajiMUR233/MoreAPIs/issues/3)
 
-get_server_version 函数的 Minecraft 服务端版本获取方式更换为使用 [Server List Ping](https://wiki.vg/Server_List_Ping) 来获取
+2. get_server_version 函数的 Minecraft 服务端版本获取方式更换为使用 [Server List Ping](https://wiki.vg/Server_List_Ping) 来获取
 
-get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来进行获取
+3. get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来进行获取
 
-修复了各种各样因为没人用而没人发现的 Bug
+4. 修复了各种各样因为没人用而没人发现的 Bug
 
 &nbsp;
 
@@ -158,9 +160,11 @@ get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来�
 
 **注意：这是一个测试性版本，在实际运行中可能出现各种 Bug**
 
-再次尝试修复了 [#3](https://github.com/HuajiMUR233/MoreAPIs/issues/3) :-(
+1. 再次尝试修复了 [#3](https://github.com/HuajiMUR233/MoreAPIs/issues/3) :-(
 
-还试着修了 [#4](https://github.com/HuajiMUR233/MoreAPIs/issues/4)
+2. 还试着修了 [#4](https://github.com/HuajiMUR233/MoreAPIs/issues/4)
+
+&nbsp;
 
 ## 0.2.0
 
@@ -174,23 +178,56 @@ get_tps 函数改为直接通过获取 server.properties 中的 RCON 配置来�
 
 **注意：这是一个预发布版本，在实际运行中可能出现各种 Bug**
 
-可能修复了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
+1. 可能修复了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
 
 &nbsp;
 
 ## 0.2.2-alpha
 
-**注意：这是一个尝试性版本，在实际运行中可能出现各种奇葩 Bug**
+**注意x1：这是一个尝鲜性版本，在实际运行中可能出现各种奇葩 Bug**
 
-完全修了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
+**注意x2：该版本进行了与上个版本不兼容的修改**
 
-现在必须在新线程内执行全部函数
+**以下是进行了不兼容修改的地方：**
 
-把眼花缭乱的依赖列表拖了回来
+```
+类：
+MoreAPIs
+```
 
-强制终止的方式修改为直接调用 MCDR 的私有函数
+1. 完全修了 [#5](https://github.com/HuajiMUR233/MoreAPIs/issues/5)
 
-去掉了个之前忘删了的废弃变量
+2. 现在必须在新线程内执行全部函数
+
+3. 把眼花缭乱的依赖列表拖了回来
+
+4. 强制终止的方式修改为直接调用 MCDR 的私有函数
+
+5. 去掉了个之前忘删了的废弃变量
 
 &nbsp;
 
+## 0.2.2
+
+可能没问题了
+
+为 MCDReforged 2.0 作了个准备 :-(
+
+&nbsp;
+
+## 0.2.3-alpha
+
+**注意x1：这是一个尝鲜性版本，在实际运行中可能出现各种奇葩 Bug**
+
+**注意x2：该版本进行了与上个版本不兼容的修改**
+
+**以下是进行了不兼容修改的地方：**
+
+```
+事件：
+more_apis.death_message
+```
+
+1. more_apis.death_message 事件增加了参数 `player`
+
+&nbsp;
