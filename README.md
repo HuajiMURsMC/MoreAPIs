@@ -104,11 +104,9 @@
 
 玩家死亡显示死亡信息后触发(仅对原版死亡消息进行支持)
 
-参数：`ServerInterface`，`death_message`，`player`
+参数：`ServerInterface`，`death_message`
 
 `death_message`：死亡信息
-
-`player`：死亡的玩家
 
 &nbsp;
 
@@ -229,5 +227,22 @@ more_apis.death_message
 ```
 
 1. more_apis.death_message 事件增加了参数 `player`
+
+&nbsp;
+
+## 0.2.3-beta
+
+**注意x1：这是一个测试性版本，在实际运行中可能出现各种 Bug**
+
+**注意x2：该版本进行了与上个版本不兼容的修改**
+
+**以下是进行了不兼容修改的地方：**
+
+```
+事件：
+more_apis.death_message
+```
+
+1. more_apis.death_message 事件去除了参数 `player`
 
 &nbsp;

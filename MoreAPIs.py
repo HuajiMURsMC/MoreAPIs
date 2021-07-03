@@ -26,7 +26,10 @@ import time
 import re
 import os
 
-from More_APIs.StatusPing import StatusPing
+try:
+    from more_apis.More_APIs.StatusPing import StatusPing
+except:
+    from More_APIs.StatusPing import StatusPing
 
 from mcdreforged.mcdr_state import MCDReforgedFlag
 from mcdreforged.api.all import *
@@ -78,8 +81,7 @@ def on_info(server: ServerInterface or PluginServerInterface, info: Info):
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
     for i in death_message["msgs"]:
-        match=re.fullmatch(i, info.content)
-        if match is not None:
+        if re.fullmatch(i, info.content):
             server.dispatch_event(_events["death_message"], (info.content,match.group[1]))
             break
 
