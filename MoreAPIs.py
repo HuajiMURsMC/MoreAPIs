@@ -26,17 +26,14 @@ import time
 import re
 import os
 
-try:
-    from more_apis.More_APIs.StatusPing import StatusPing
-except:
-    from More_APIs.StatusPing import StatusPing
+from More_APIs.StatusPing import StatusPing
 
 from mcdreforged.mcdr_state import MCDReforgedFlag
 from mcdreforged.api.all import *
 
 
 _plugin_id = "more_apis"
-_plugin_version = "0.2.3-alpha"
+_plugin_version = "1.0.0"
 _events = {
     "death_message": PluginEvent(_plugin_id + ".death_message"),
     "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
@@ -54,7 +51,7 @@ PLUGIN_METADATA = {
 
 
 @new_thread("More APIs' Handler")
-def on_info(server: ServerInterface or PluginServerInterface, info: Info):
+def on_info(server: ServerInterface, info: Info):
     if info.is_user:
         return
     death_message = __get_death_messages(server)
@@ -118,11 +115,8 @@ class MoreAPIs:
         return mapped
 
     def kill_server(self) -> None:
-        try:
-            self.server.kill()
-        except:
-            self.mcdr_server.remove_flag(MCDReforgedFlag.EXIT_AFTER_STOP)
-            self.mcdr_server.stop(forced=True)
+        self.mcdr_server.remove_flag(MCDReforgedFlag.EXIT_AFTER_STOP)
+        self.mcdr_server.stop(forced=True)
 
     def get_server_version(self) -> str:
         if not self.server.is_server_startup:
