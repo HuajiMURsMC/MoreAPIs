@@ -79,7 +79,7 @@ def on_info(server: ServerInterface, info: Info):
 
     for i in death_message["msgs"]:
         if re.fullmatch(i, info.content):
-            server.dispatch_event(_events["death_message"], (info.content,match.group[1]))
+            server.dispatch_event(_events["death_message"], (info.content))
             break
 
     if info.content == "Saved the game":
