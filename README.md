@@ -24,7 +24,7 @@
 
 **注意：需在 Minecraft 服务端启动后才能获取**
 
-&nbsp;
+<!--&nbsp;
 
 #### `MoreAPIs.kill_server(server: ServerInterface)`
 
@@ -32,7 +32,7 @@
 
 参数:
 
-`server`：ServerInterface
+`server`：ServerInterface-->
 
 &nbsp;
 
