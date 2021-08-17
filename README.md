@@ -1,4 +1,4 @@
-# 算了不存档了，有问题发issue
+# 这是适用于 MCDR 1.x 的版本，如果你正在使用 MCDR 2.x，请切换至 [MCDR-2.x](https://github.com/HuajiMUR233/MoreAPIs) 分支
 
 # More APIs
 
