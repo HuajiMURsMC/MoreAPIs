@@ -131,12 +131,8 @@ class MoreAPIs:
     def execute_at(self, player: str, command: str) -> None:
         self.server.execute(f"execute as {player} at {player} {command}")
 
-    def get_mcdr_config(self) -> dict:
-        with open("config.yml", "r", encoding="utf-8") as f:
-            return self.yaml.load(f)
-
     def get_server_properties(self) -> dict:
-        server_dir = self.get_mcdr_config()["working_directory"]
+        server_dir = self.server.get_mcdr_config()["working_directory"]
         with open(
             os.path.join(server_dir, "server.properties"), "r", encoding="utf-8"
         ) as f:

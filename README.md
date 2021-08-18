@@ -48,11 +48,9 @@
 
 &nbsp;
 
-#### `MoreAPIs.execute_at(server: ServerInterface,player: str,command：str)`
+#### `MoreAPIs.execute_at(server: ServerInterface, player: str, command: str)`
 
 在某个玩家执行某条指令
-
-以 Bukkit 方式注册的指令可能不行
 
 参数:
 
@@ -61,12 +59,6 @@
 `player`：玩家名称
 
 `command`：要执行的指令
-
-&nbsp;
-
-#### `MoreAPIs.get_mcdr_config()`
-
-获取 MCDReforged 的配置文件
 
 &nbsp;
 
