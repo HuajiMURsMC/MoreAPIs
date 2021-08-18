@@ -14,7 +14,7 @@
 
 ## API 列表
 
-**注意**：以下API均在 MoreAPIs 类中，使用前需先进行实例化，且**不可在主线程调用**
+**注意**：以下API均**不可在主线程调用**
 
 &nbsp;
 
@@ -23,16 +23,6 @@
 获取服务端的版本
 
 **注意：需在 Minecraft 服务端启动后才能获取**
-
-<!--&nbsp;
-
-#### `MoreAPIs.kill_server(server: ServerInterface)`
-
-强制终止服务端
-
-参数:
-
-`server`：ServerInterface-->
 
 &nbsp;
 
@@ -89,8 +79,6 @@
 #### `MoreAPIs.get_tps(secs: int = 1)`
 
 获取服务器的 TPS
-
-**注意：需先配置好 Minecraft 的 [RCON](https://wiki.vg/RCON) 才能使用**
 
 参数:
 

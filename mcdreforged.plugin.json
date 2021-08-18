@@ -1,0 +1,11 @@
+{
+    "id": "more_apis",
+    "version": "2.0.0-dev",
+    "name": "More APIs",
+    "description": "Add some api for MCDReforged 2.x",
+    "author": "Huaji_MUR233",
+    "link": "https://github.com/MCDReforged/MCDReforged-ExamplePlugin",
+    "resources": [
+        "death_messages.yml"
+    ]
+}

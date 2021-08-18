@@ -16,42 +16,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import time
+import re
+import os
 
 from parse import parse
 from ruamel import yaml
 import javaproperties
 import requests
 
-import time
-import re
-import os
-
-from More_APIs.StatusPing import StatusPing
-
-from mcdreforged.mcdr_state import MCDReforgedFlag
 from mcdreforged.api.all import *
 
+from more_apis.StatusPing import StatusPing
 
-_plugin_id = "more_apis"
-_plugin_version = "1.0.0"
 _events = {
-    "death_message": PluginEvent(_plugin_id + ".death_message"),
-    "player_made_advancement": PluginEvent(_plugin_id + "advancement"),
-    "server_crashed": PluginEvent(_plugin_id + ".server_crashed"),
-    "saved_game": PluginEvent(_plugin_id + ".saved_game"),
+    "death_message": PluginEvent("more_apis.death_message"),
+    "player_made_advancement": PluginEvent("more_apis.advancement"),
+    "server_crashed": PluginEvent("more_apis.server_crashed"),
+    "saved_game": PluginEvent("more_apis.saved_game"),
 }
 
-PLUGIN_METADATA = {
-    "id": _plugin_id,
-    "version": _plugin_version,
-    "name": "More APIs",
-    "author": "HuajiMUR",
-    "dependencies": {"mcdreforged": ">=1.0.0"},
-}
+
+def on_load(server: PluginServerInterface, old):
+    global api
+    api = MoreAPIs(server)
 
 
 @new_thread("More APIs' Handler")
-def on_info(server: ServerInterface, info: Info):
+def on_info(server: PluginServerInterface, info: Info):
     if info.is_user:
         return
     death_message = __get_death_messages(server)
@@ -87,20 +79,33 @@ def on_info(server: ServerInterface, info: Info):
 
 
 class MoreAPIs:
-    def __init__(self, server: ServerInterface):
-        if server.is_on_executor_thread():
-            raise RuntimeError('Cannot use More APIs on the task executor thread')
+    tps: float
+
+    def __getattribute__(self, item):
+        if self.server.is_on_executor_thread():
+            raise RuntimeError(f'Cannot invoke {item} on the task executor thread')
+        return self.__dict__[item]
+
+    def __init__(self, server: PluginServerInterface):
         self.server = server
         self.server_properties = self.get_server_properties()
         self.version_data = self.__data_remapper(
-            "https://hub.fastgit.org/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
+            "https://github.com/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
         )
-        try:
-            self.mcdr_server=server._mcdr_server
-        except:
-            self.mcdr_server=server._ServerInterface__mcdr_server
+        self.yaml = yaml.YAML()
+        self.getting_tps = False
+        server.register_event_listener("mcdr.general_info", self.__tps_getter)
 
-    def __data_remapper(self, data_url) -> dict:
+    def __tps_getter(self, server: PluginServerInterface, info: Info):
+        if self.getting_tps:
+            result = parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
+                           info.content)
+            if result is not None:
+                self.getting_tps = False
+                self.tps = result['tps']
+
+    @staticmethod
+    def __data_remapper(data_url) -> dict:
         datas = requests.get(data_url).json()
         mapped = {}
         for data in datas:
@@ -114,10 +119,6 @@ class MoreAPIs:
                 mapped[protocol_ver] = versions[-1] + "~" + versions[0]
         return mapped
 
-    def kill_server(self) -> None:
-        self.mcdr_server.remove_flag(MCDReforgedFlag.EXIT_AFTER_STOP)
-        self.mcdr_server.stop(forced=True)
-
     def get_server_version(self) -> str:
         if not self.server.is_server_startup:
             raise RuntimeError("Cannot invoke get_server_version before server startup")
@@ -127,18 +128,12 @@ class MoreAPIs:
         version = response["version"]["protocol"]
         return self.version_data[version]
 
-    def send_server_list_ping(
-        self, host: str = "localhost", port: int = 25565, timeout: int = 5
-    ) -> dict:
-        response = StatusPing(host, port, timeout)
-        return response.get_status()
-
     def execute_at(self, player: str, command: str) -> None:
         self.server.execute(f"execute as {player} at {player} {command}")
 
     def get_mcdr_config(self) -> dict:
         with open("config.yml", "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            return self.yaml.load(f)
 
     def get_server_properties(self) -> dict:
         server_dir = self.get_mcdr_config()["working_directory"]
@@ -148,8 +143,14 @@ class MoreAPIs:
             return javaproperties.load(f)
 
     def get_tps(self, secs: int = 1) -> float:
-        if not self.server_properties["enable-rcon"]:
-            raise RuntimeError("Need open Minecraft Server's RCON future")
+        if self.server_properties["enable-rcon"]:
+            return self.__get_tps_rcon(secs)
+        self.getting_tps = True
+        while self.getting_tps:
+            continue
+        return self.tps
+
+    def __get_tps_rcon(self, secs: int = 1) -> float:
         rcon = RconConnection(
             "localhost",
             int(self.server_properties["rcon.port"]),
@@ -163,19 +164,18 @@ class MoreAPIs:
         return float(parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
                            response)['tps'])
 
+    @staticmethod
+    def send_server_list_ping(host: str = "localhost", port: int = 25565, timeout: int = 5) -> dict:
+        response = StatusPing(host, port, timeout)
+        return response.get_status()
 
-def __get_death_messages(server: ServerInterface) -> dict:
-    with open(
-        os.path.join(
-            os.path.dirname(server.get_plugin_file_path(_plugin_id)),
-            "More_APIs",
-            "death_messages.yml",
-        ),
-        "r",
-        encoding="utf-8",
-    ) as f:
+
+def __get_death_messages(server: PluginServerInterface) -> dict:
+    with server.open_bundled_file("death_messages.yml") as f:
         return yaml.safe_load(f)
 
+
+api: MoreAPIs
 
 if __name__ == "__main__":
     print("You must use it in MCDReforged")
