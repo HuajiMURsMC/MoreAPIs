@@ -23,15 +23,15 @@ import os
 from parse import parse
 from ruamel import yaml
 import javaproperties
-import requests
 
+from mcdreforged.plugin.plugin_event import MCDREvent
 from mcdreforged.api.all import *
 
 from more_apis.StatusPing import StatusPing
 
 _events = {
-    "death_message": PluginEvent("more_apis.death_message"),
-    "player_made_advancement": PluginEvent("more_apis.advancement"),
+    "death_message": MCDREvent("more_apis.death_message", "Death message", "on_death_message"),
+    "player_made_advancement": MCDREvent("more_apis.player_made_advancement", "Player made advancement", "on_player_made_advancement"),
     "server_crashed": PluginEvent("more_apis.server_crashed"),
     "saved_game": PluginEvent("more_apis.saved_game"),
 }
@@ -39,14 +39,19 @@ _events = {
 
 def on_load(server: PluginServerInterface, old):
     global api
-    api = MoreAPIs(server)
+    if old is not None:
+        api = old.api
+    else:
+        api = MoreAPIs(server)
+    if not server.is_server_startup() and api.version is not None:
+        server.register_event_listener("mcdr.general_info", __version_listener)
 
 
 @new_thread("More APIs' Handler")
 def on_info(server: PluginServerInterface, info: Info):
     if info.is_user:
         return
-    death_message = __get_death_messages(server)
+    death_messages = __get_death_messages(server)
     if info.logging_level == "ERROR" and info.content.startswith(
         "This crash report has been saved to:"
     ):
@@ -69,7 +74,7 @@ def on_info(server: PluginServerInterface, info: Info):
             adv = re.search(r"(?<=%s \[).+(?=])" % action, rest).group()
             server.dispatch_event(_events["player_made_advancement"], (player, adv))
 
-    for i in death_message["msgs"]:
+    for i in death_messages:
         if re.fullmatch(i, info.content):
             server.dispatch_event(_events["death_message"], (info.content,))
             break
@@ -80,23 +85,16 @@ def on_info(server: PluginServerInterface, info: Info):
 
 class MoreAPIs:
     tps: float
-
-    def __getattribute__(self, item):
-        if self.server.is_on_executor_thread():
-            raise RuntimeError(f'Cannot invoke {item} on the task executor thread')
-        return self.__dict__[item]
+    version: str = None
 
     def __init__(self, server: PluginServerInterface):
         self.server = server
         self.server_properties = self.get_server_properties()
-        self.version_data = self.__data_remapper(
-            "https://github.com/PrismarineJS/minecraft-data/raw/master/data/pc/common/protocolVersions.json"
-        )
         self.yaml = yaml.YAML()
         self.getting_tps = False
-        server.register_event_listener("mcdr.general_info", self.__tps_getter)
+        server.register_event_listener("mcdr.general_info", self.__tps_listener)
 
-    def __tps_getter(self, server: PluginServerInterface, info: Info):
+    def __tps_listener(self, server: PluginServerInterface, info: Info):
         if self.getting_tps:
             result = parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
                            info.content)
@@ -104,29 +102,9 @@ class MoreAPIs:
                 self.getting_tps = False
                 self.tps = result['tps']
 
-    @staticmethod
-    def __data_remapper(data_url) -> dict:
-        datas = requests.get(data_url).json()
-        mapped = {}
-        for data in datas:
-            if not data["version"] in mapped:
-                mapped[data["version"]] = data["minecraftVersion"]
-            else:
-                mapped[data["version"]] += "," + data["minecraftVersion"]
-        for protocol_ver in mapped:
-            if "," in mapped[protocol_ver]:
-                versions = mapped[protocol_ver].split(",")
-                mapped[protocol_ver] = versions[-1] + "~" + versions[0]
-        return mapped
-
     def get_server_version(self) -> str:
-        if not self.server.is_server_startup:
-            raise RuntimeError("Cannot invoke get_server_version before server startup")
-        response = StatusPing(
-            "localhost", int(self.server_properties["server-port"])
-        ).get_status()
-        version = response["version"]["protocol"]
-        return self.version_data[version]
+        if self.version is not None:
+            return self.version
 
     def execute_at(self, player: str, command: str) -> None:
         self.server.execute(f"execute as {player} at {player} {command}")
@@ -137,8 +115,16 @@ class MoreAPIs:
             os.path.join(server_dir, "server.properties"), "r", encoding="utf-8"
         ) as f:
             return javaproperties.load(f)
+        
+    def send_server_list_ping(self, host: str = "localhost", port: int = 25565, timeout: int = 5) -> dict:
+        if self.server.is_on_executor_thread:
+            raise RuntimeError('Cannot invoke send_server_list_ping on the task executor thread')
+        response = StatusPing(host, port, timeout)
+        return response.get_status()
 
     def get_tps(self, secs: int = 1) -> float:
+        if self.server.is_on_executor_thread:
+            raise RuntimeError('Cannot invoke get_tps on the task executor thread')
         if self.server_properties["enable-rcon"]:
             return self.__get_tps_rcon(secs)
         self.getting_tps = True
@@ -160,15 +146,20 @@ class MoreAPIs:
         return float(parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
                            response)['tps'])
 
-    @staticmethod
-    def send_server_list_ping(host: str = "localhost", port: int = 25565, timeout: int = 5) -> dict:
-        response = StatusPing(host, port, timeout)
-        return response.get_status()
-
 
 def __get_death_messages(server: PluginServerInterface) -> dict:
     with server.open_bundled_file("death_messages.yml") as f:
-        return yaml.safe_load(f)
+        death_messages = yaml.safe_load(f)
+    return death_messages['now'] + death_messages['old']
+
+
+def __version_listener(server: PluginServerInterface, info: Info):
+    if info.is_user or api.version is not None:
+        return
+    
+    parsed = parse("Starting minecraft server version {version}", info.content)
+    if parsed is not None:
+        api.version = parsed['version']
 
 
 api: MoreAPIs

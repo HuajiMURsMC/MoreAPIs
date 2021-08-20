@@ -1,11 +1,15 @@
 {
     "id": "more_apis",
-    "version": "2.0.0-dev.1",
+    "version": "2.0.0-beta",
     "name": "More APIs",
-    "description": "Add some api for MCDReforged 2.x",
+    "description": {
+        "en_us": "Add some api for MCDReforged",
+        "zh_cn": "给 MCDReforged 添加了一些 API"
+    },
     "author": "Huaji_MUR233",
-    "link": "https://github.com/MCDReforged/MCDReforged-ExamplePlugin",
+    "link": "https://github.com/HuajiMUR233/MoreAPIs",
     "resources": [
-        "death_messages.yml"
+        "death_messages.yml",
+        "LICENSE"
     ]
 }

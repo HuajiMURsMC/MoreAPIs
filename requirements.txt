@@ -1,5 +1,4 @@
-javaproperties
-ruamel.yaml
-mcdreforged
-requests
-parse
+ruamel.yaml>=0.16.12
+javaproperties>=0.8.0
+mcdreforged>=2.0.0
+parse>=1.18.0
