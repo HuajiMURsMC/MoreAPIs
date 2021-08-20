@@ -29,7 +29,7 @@ from mcdreforged.api.all import *
 
 from more_apis.StatusPing import StatusPing
 
-_events = {
+__events = {
     "death_message": MCDREvent("more_apis.death_message", "Death message", "on_death_message"),
     "player_made_advancement": MCDREvent("more_apis.player_made_advancement", "Player made advancement", "on_player_made_advancement"),
     "server_crashed": PluginEvent("more_apis.server_crashed"),
@@ -61,7 +61,7 @@ def on_info(server: PluginServerInterface, info: Info):
         server.logger.warning(
             "A Crash Report was detected, the server may have crashed"
         )
-        server.dispatch_event(_events["server_crashed"], (path,))
+        server.dispatch_event(__events["server_crashed"], (path,))
 
     for action in [
         "made the advancement",
@@ -72,15 +72,15 @@ def on_info(server: PluginServerInterface, info: Info):
         if match is not None:
             player, rest = info.content.split(" ", 1)
             adv = re.search(r"(?<=%s \[).+(?=])" % action, rest).group()
-            server.dispatch_event(_events["player_made_advancement"], (player, adv))
+            server.dispatch_event(__events["player_made_advancement"], (player, adv))
 
     for i in death_messages:
         if re.fullmatch(i, info.content):
-            server.dispatch_event(_events["death_message"], (info.content,))
+            server.dispatch_event(__events["death_message"], (info.content,))
             break
 
     if info.content == "Saved the game":
-        server.dispatch_event(_events["saved_game"],())
+        server.dispatch_event(__events["saved_game"],())
 
 
 class MoreAPIs:
