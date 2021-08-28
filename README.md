@@ -13,13 +13,14 @@
 | ruamel.yaml    | >=0.16.12 |
 | javaproperties | >=0.8.0   |
 | mcdreforged    | >=2.0.0   |
+| dnspython      | >=2.1.0   |
 | parse          | >=1.18.0  |
 
 ---
 
 ## API 列表
 
-#### `api.send_server_list_ping(host: str, port, timeout: int)`
+#### `api.send_server_list_ping(host: str, port, timeout: int) -> dict`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft：Java Editon 服务器
 
@@ -43,7 +44,7 @@
 
 &nbsp;
 
-#### `api.execute_at(server: ServerInterface, player: str, command: str)`
+#### `api.execute_at(server: ServerInterface, player: str, command: str) -> None`
 
 在某个玩家执行某条指令
 
@@ -57,13 +58,19 @@
 
 &nbsp;
 
-#### `api.get_server_properties()`
+#### `api.get_server_properties() -> dict`
 
 获取 Minecraft 的 `server.properties`
 
 &nbsp;
 
-#### `api.get_tps(secs: int = 1)`
+#### `api.parse_srv(host: str) -> Tuple[str, int]`
+
+解析使用 SRV 解析 的 Minecraft 服务端 IP 为 IP 与 端口
+
+&nbsp;
+
+#### `api.get_tps(secs: int = 1) -> float`
 
 获取服务器的 TPS
 

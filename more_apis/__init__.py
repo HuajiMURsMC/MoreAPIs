@@ -23,6 +23,7 @@ import os
 from parse import parse
 from ruamel import yaml
 import javaproperties
+import dns.resolver
 
 from mcdreforged.plugin.plugin_event import MCDREvent
 from mcdreforged.api.all import *
@@ -116,6 +117,15 @@ class MoreAPIs:
             raise RuntimeError('Cannot invoke send_server_list_ping on the task executor thread')
         response = StatusPing(host, port, timeout)
         return response.get_status()
+    
+    def parse_srv(self, host: str):
+        try:
+            answers = dns.resolver.resolve("_minecraft._tcp." + host, "SRV")
+            if len(answers):
+                answer = answers[0]
+                return str(answer.target).rstrip("."), int(answer.port)
+        except:
+            return None
 
     def get_tps(self, secs: int = 1) -> float:
         if self.server.is_on_executor_thread:
