@@ -1,6 +1,6 @@
 {
     "id": "more_apis",
-    "version": "2.0.0-rc",
+    "version": "2.1.0",
     "name": "More APIs",
     "description": {
         "en_us": "Add some api for MCDReforged",
@@ -8,6 +8,9 @@
     },
     "author": "Huaji_MUR233",
     "link": "https://github.com/HuajiMUR233/MoreAPIs",
+    "dependencies":{
+        "mcdreforged": ">=2.1.0"
+    },
     "resources": [
         "death_messages.yml",
         "LICENSE"

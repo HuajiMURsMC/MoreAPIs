@@ -19,14 +19,6 @@
 
 ## API 列表
 
-#### `api.get_server_version()`
-
-获取服务端的版本
-
-**注意：需在 Minecraft 服务端启动前放入插件才能获取到 **
-
-&nbsp;
-
 #### `api.send_server_list_ping(host: str, port, timeout: int)`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft：Java Editon 服务器

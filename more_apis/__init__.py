@@ -43,8 +43,6 @@ def on_load(server: PluginServerInterface, old):
         api = old.api
     else:
         api = MoreAPIs(server)
-    if not server.is_server_startup() and api.version is not None:
-        server.register_event_listener("mcdr.general_info", __version_listener)
 
 
 @new_thread("More APIs' Handler")
@@ -85,7 +83,6 @@ def on_info(server: PluginServerInterface, info: Info):
 
 class MoreAPIs:
     tps: float
-    version: str = None
 
     def __init__(self, server: PluginServerInterface):
         self.server = server
@@ -96,15 +93,13 @@ class MoreAPIs:
 
     def __tps_listener(self, server: PluginServerInterface, info: Info):
         if self.getting_tps:
+            if info.is_user:
+                return
             result = parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
                            info.content)
             if result is not None:
                 self.getting_tps = False
                 self.tps = result['tps']
-
-    def get_server_version(self) -> str:
-        if self.version is not None:
-            return self.version
 
     def execute_at(self, player: str, command: str) -> None:
         self.server.execute(f"execute as {player} at {player} {command}")
@@ -151,15 +146,6 @@ def __get_death_messages(server: PluginServerInterface) -> dict:
     with server.open_bundled_file("death_messages.yml") as f:
         death_messages = yaml.safe_load(f)
     return death_messages['now'] + death_messages['old']
-
-
-def __version_listener(server: PluginServerInterface, info: Info):
-    if info.is_user or api.version is not None:
-        return
-    
-    parsed = parse("Starting minecraft server version {version}", info.content)
-    if parsed is not None:
-        api.version = parsed['version']
 
 
 api: MoreAPIs
