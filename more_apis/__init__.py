@@ -25,8 +25,11 @@ from ruamel import yaml
 import javaproperties
 import dns.resolver
 
+from mcdreforged.api.types import PluginServerInterface, Info
 from mcdreforged.plugin.plugin_event import MCDREvent
-from mcdreforged.api.all import *
+from mcdreforged.api.decorator import new_thread
+from mcdreforged.api.rcon import RconConnection
+from mcdreforged.api.event import PluginEvent
 
 from more_apis.StatusPing import StatusPing
 
