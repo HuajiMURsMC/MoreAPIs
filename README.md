@@ -21,7 +21,11 @@
 
 ## API 列表
 
-#### `api.send_server_list_ping(host: str, port, tries: int) -> dict`
+### MoreAPIs
+
+所有 API 都在这个类下，使用前请先实例化它
+
+#### `MoreAPIs.send_server_list_ping(host: str, port, tries: int) -> dict`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft：Java Editon 服务器
 
@@ -45,7 +49,7 @@
 
 &nbsp;
 
-#### `api.execute_at(server: ServerInterface, player: str, command: str) -> None`
+#### `MoreAPIs.execute_at(server: ServerInterface, player: str, command: str) -> None`
 
 在某个玩家执行某条指令
 
@@ -59,19 +63,19 @@
 
 &nbsp;
 
-#### `api.get_server_properties() -> dict`
+#### `MoreAPIs.get_server_properties() -> dict`
 
 获取 Minecraft 的 `server.properties`
 
 &nbsp;
 
-#### `api.parse_srv(host: str) -> Tuple[str, int]`
+#### `MoreAPIs.parse_srv(host: str) -> Tuple[str, int]`
 
-解析使用 SRV 解析 的 Minecraft 服务端 IP 为 IP 与 端口
+解析使用 `SRV 解析` 的 `Minecraft 服务端 IP` 为 IP 与 端口
 
 &nbsp;
 
-#### `api.get_tps(secs: int = 1) -> float`
+#### `MoreAPIs.get_tps(secs: int = 1) -> float`
 
 获取服务器的 TPS
 
@@ -93,8 +97,6 @@
 
 其中 `death_message` 表示死亡信息
 
-**默认函数名称**：on_death_message
-
 &nbsp;
 
 #### 玩家取得得了一个进度
@@ -104,8 +106,6 @@
 **回调参数**：`ServerInterface`，`advancement`
 
 其中 `advancement` 表示成就内容
-
-**默认函数名称**：on_player_made_advancement
 
 &nbsp;
 

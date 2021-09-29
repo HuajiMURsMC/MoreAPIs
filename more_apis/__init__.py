@@ -1,21 +1,3 @@
-"""
-    MoreAPIs
-    Copyright (C) 2021  Huaji_MUR233
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
 import time
 import re
 import os
@@ -32,28 +14,23 @@ from mcdreforged.api.decorator import new_thread
 from mcdreforged.api.rcon import RconConnection
 from mcdreforged.api.event import PluginEvent
 
-
 __events = {
-    "death_message": MCDREvent("more_apis.death_message", "Death message", "on_death_message"),
-    "player_made_advancement": MCDREvent("more_apis.player_made_advancement", "Player made advancement", "on_player_made_advancement"),
+    "death_message": PluginEvent("more_apis.death_message"),
+    "player_made_advancement": PluginEvent("more_apis.player_made_advancement"),
     "server_crashed": PluginEvent("more_apis.server_crashed"),
     "saved_game": PluginEvent("more_apis.saved_game"),
 }
 
 
-def on_load(server: PluginServerInterface, old):
-    global api
-    if old is not None:
-        api = old.api
-    else:
-        api = MoreAPIs(server)
-
-
 @new_thread("More APIs' Handler")
 def on_info(server: PluginServerInterface, info: Info):
+    def get_death_messages() -> dict:
+        with server.open_bundled_file("death_messages.yml") as f:
+            death_messages = yaml.safe_load(f)
+        return death_messages['now'] + death_messages['old']
     if info.is_user:
         return
-    death_messages = __get_death_messages(server)
+    death_messages = get_death_messages()
     if info.logging_level == "ERROR" and info.content.startswith(
         "This crash report has been saved to:"
     ):
@@ -157,14 +134,6 @@ class MoreAPIs:
         return float(parse("Stopped debug profiling after {secs} seconds and {ticks} ticks ({tps} ticks per second)",
                            response)['tps'])
 
-
-def __get_death_messages(server: PluginServerInterface) -> dict:
-    with server.open_bundled_file("death_messages.yml") as f:
-        death_messages = yaml.safe_load(f)
-    return death_messages['now'] + death_messages['old']
-
-
-api: MoreAPIs
 
 if __name__ == "__main__":
     print("You must use it in MCDReforged")

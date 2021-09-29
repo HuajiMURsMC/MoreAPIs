@@ -1,6 +1,4 @@
 now:
-  # /kill
-  - "Killed \\w{1,16}"
   # Arrows
   - "\\w{1,16} was shot by .+"
   # Snowballs
