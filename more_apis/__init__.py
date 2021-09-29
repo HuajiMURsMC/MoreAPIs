@@ -20,6 +20,7 @@ import time
 import re
 import os
 
+from mcstatus import MinecraftServer
 from parse import parse
 from ruamel import yaml
 import javaproperties
@@ -31,7 +32,6 @@ from mcdreforged.api.decorator import new_thread
 from mcdreforged.api.rcon import RconConnection
 from mcdreforged.api.event import PluginEvent
 
-from more_apis.StatusPing import StatusPing
 
 __events = {
     "death_message": MCDREvent("more_apis.death_message", "Death message", "on_death_message"),
@@ -115,11 +115,14 @@ class MoreAPIs:
         ) as f:
             return javaproperties.load(f)
         
-    def send_server_list_ping(self, host: str = "localhost", port: int = 25565, timeout: int = 5) -> dict:
+    def send_server_list_ping(self, host: str = "localhost", port: int = 25565, tries: int = 3) -> dict:
         if self.server.is_on_executor_thread:
             raise RuntimeError('Cannot invoke send_server_list_ping on the task executor thread')
-        response = StatusPing(host, port, timeout)
-        return response.get_status()
+        server = MinecraftServer(host, port)
+        response = server.status(tries)
+        status = response.raw
+        status['ping']=round(response.latency,2)
+        return status
     
     def parse_srv(self, host: str):
         try:
