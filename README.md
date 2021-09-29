@@ -14,13 +14,14 @@
 | javaproperties | >=0.8.0   |
 | mcdreforged    | >=2.0.0   |
 | dnspython      | >=2.1.0   |
+| mcstatus       | >=6.5.0   |
 | parse          | >=1.18.0  |
 
 ---
 
 ## API 列表
 
-#### `api.send_server_list_ping(host: str, port, timeout: int) -> dict`
+#### `api.send_server_list_ping(host: str, port, tries: int) -> dict`
 
 发送 [Server List Ping](https://wiki.vg/Server_List_Ping) 至某个 Minecraft：Java Editon 服务器
 
@@ -38,9 +39,9 @@
 
 默认：`25565`
 
-`timeout`：超时时间(单位：秒)
+`tries`：尝试次数
 
-默认：`5`
+默认：`3`
 
 &nbsp;
 
@@ -50,7 +51,7 @@
 
 参数:
 
-`server`：ServerInterface
+`server`：[ServerInterface](https://mcdreforged.readthedocs.io/zh_CN/latest/plugin_dev/classes/ServerInterface.html)
 
 `player`：玩家名称
 
