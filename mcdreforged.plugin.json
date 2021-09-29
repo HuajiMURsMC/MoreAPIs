@@ -1,6 +1,6 @@
 {
     "id": "more_apis",
-    "version": "2.2.0",
+    "version": "2.2.0-dev",
     "name": "More APIs",
     "description": {
         "en_us": "Add some api for MCDReforged",
