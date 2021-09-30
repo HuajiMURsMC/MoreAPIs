@@ -1,4 +1,4 @@
-# 这是适用于 MCDR 2.x 的版本，如果你正在使用 MCDR 1.x，请切换至 [MCDR-1.x](https://github.com/HuajiMUR233/MoreAPIs/tree/MCDR-1.x) 分支
+# 这是适用于 MCDR 2.x 的版本，如果你正在使用 MCDR 1.x，请切换至 [legacy/MCDR-1.x](https://github.com/HuajiMUR233/MoreAPIs/tree/legacy/MCDR-1.x) 分支
 
 # More APIs
 
